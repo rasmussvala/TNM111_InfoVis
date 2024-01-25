@@ -19,10 +19,6 @@ class ScatterPlot(tk.Canvas):
         plot_width = self.winfo_reqwidth()
         plot_height = self.winfo_reqheight()
         
-         # Define plot area dimensions
-        # plot_width = self.winfo_width()
-        # plot_height = self.winfo_height()
-        
         # Define padding for plot area
         padding = 20
 
@@ -33,9 +29,6 @@ class ScatterPlot(tk.Canvas):
         y_max = self.data.iloc[:, 1].max()
         x_scale = (plot_width - 2 * padding) / (x_max - x_min)
         y_scale = (plot_height - 2 * padding) / (y_max - y_min)
-        print(y_min)
-        print(y_max)
-
 
       # Plot each data point
         for index, row in self.data.iterrows():
@@ -48,10 +41,6 @@ class ScatterPlot(tk.Canvas):
         # Draw x and y axes
         self.create_line(padding, plot_height - padding, plot_width - padding, plot_height - padding, fill="black")
         self.create_line(padding, plot_height - padding, padding, padding, fill="black")
-
-
-        #self.create_line(0,plot_height,plot_width,plot_height, fill="black", width=8)
-        #self.create_line(0,plot_height,0,0, fill="black", width=8)
 
 # Main
 if __name__ == "__main__":
