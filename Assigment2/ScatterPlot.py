@@ -49,14 +49,14 @@ class ScatterPlot(tk.Canvas):
             y_axis_x_pos = origin_x
         elif x_min >= 0:
             y_axis_x_pos = padding
-        elif x_max <= 0:
+        else:  # x_max <= 0
             y_axis_x_pos = plot_width - padding
 
         if y_min <= 0 <= y_max:
             x_axis_y_pos = origin_y
         elif y_min >= 0:
             x_axis_y_pos = plot_height - padding
-        elif y_max <= 0:
+        else:  # y_max <= 0
             x_axis_y_pos = padding
 
         # Draw x and y axes based on adjusted positions
@@ -67,13 +67,6 @@ class ScatterPlot(tk.Canvas):
             y_axis_x_pos, plot_height - padding, y_axis_x_pos, padding, fill="black"
         )
 
-        # origin_x = padding + (0 - x_min) * x_scale
-        # origin_y = plot_height - (padding + (0 - y_min) * y_scale)
-
-        # self.create_oval(
-        #     origin_x - 5, origin_y - 5, origin_x + 5, origin_y + 5, fill="green"
-        # )
-
 
 # Main
 if __name__ == "__main__":
@@ -83,7 +76,7 @@ if __name__ == "__main__":
     win.geometry("850x650")
 
     # Read the data
-    data = pd.read_csv("data4.csv")
+    data = pd.read_csv("data2.csv")
 
     # Create the canvas
     scatter_plot = ScatterPlot(data, win, width=800, height=600)
