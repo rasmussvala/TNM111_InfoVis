@@ -1,60 +1,29 @@
 import tkinter as tk
 import pandas as pd
+import numpy as np
 
 
 class ScatterPlot(tk.Canvas):
     def __init__(self, data, master=None, **kwargs):
         super().__init__(master, **kwargs)
         self.data = data
+        self.width, self.height = self.winfo_reqwidth(), self.winfo_reqheight()
+        self.padding = 70
+
+        self.x_min, self.x_max = self.data.iloc[:, 0].min(), self.data.iloc[:, 0].max()
+        self.y_min, self.y_max = self.data.iloc[:, 1].min(), self.data.iloc[:, 1].max()
+
+        self.x_scale = (self.width - 2 * self.padding) / (self.x_max - self.x_min)
+        self.y_scale = (self.height - 2 * self.padding) / (self.y_max - self.y_min)
+
         self.plot()
-
-    def _generate_tick_values(self, min_value, max_value, nr_of_ticks):
-        step_size = round((max_value - min_value) / (nr_of_ticks - 1))
-
-        round_min = round(min_value)
-
-        # Generate the ticks
-        ticks = [round_min + i * step_size for i in range(nr_of_ticks)]
-
-        return ticks
-
-    def _draw_ticks(self, nr_of_ticks, x_ticks, y_ticks):
-        print(nr_of_ticks)
-        print(x_ticks)
-        print(y_ticks)
 
     def plot(self):
         if self.data.empty:
             return
 
-        width, height = self.winfo_reqwidth(), self.winfo_reqheight()
-        padding = 20
-
-        x_min, x_max = self.data.iloc[:, 0].min(), self.data.iloc[:, 0].max()
-        y_min, y_max = self.data.iloc[:, 1].min(), self.data.iloc[:, 1].max()
-
-        x_scale = (width - 2 * padding) / (x_max - x_min)
-        y_scale = (height - 2 * padding) / (y_max - y_min)
-
-        shape_dict = {
-            category: shape
-            for category, shape in zip(
-                self.data.iloc[:, 2].unique(),
-                ["circle", "triangle", "square"],
-            )
-        }
-
-        for _, row in self.data.iterrows():
-            x, y, category = row[0], row[1], row[2]
-            x_pixel = padding + (x - x_min) * x_scale
-            y_pixel = height - (padding + (y - y_min) * y_scale)
-            shape = shape_dict.get(category, "circle")
-            self._plot_shape(x_pixel, y_pixel, shape, category)
-
-        self._draw_axes(
-            padding, height, width, x_min, x_max, y_min, y_max, x_scale, y_scale
-        )
-        self._create_legend(width, shape_dict)
+        self._draw_data()
+        self._draw_axes()
 
     def _plot_shape(self, x, y, shape, category, parent=None):
         parent = parent or self
@@ -74,43 +43,93 @@ class ScatterPlot(tk.Canvas):
         x2, y2 = x + half_width, y + half_height
         parent.create_polygon(x0, y0, x1, y1, x2, y2, fill="blue", tags=category)
 
-    def _draw_axes(
-        self, padding, height, width, x_min, x_max, y_min, y_max, x_scale, y_scale
-    ):
+    def _draw_data(self):
+        shape_dict = {
+            category: shape
+            for category, shape in zip(
+                self.data.iloc[:, 2].unique(),
+                ["circle", "triangle", "square"],
+            )
+        }
+
+        for _, row in self.data.iterrows():
+            x, y, category = row[0], row[1], row[2]
+            x_pixel = self.padding + (x - self.x_min) * self.x_scale
+            y_pixel = self.height - (self.padding + (y - self.y_min) * self.y_scale)
+            shape = shape_dict.get(category, "circle")
+            self._plot_shape(x_pixel, y_pixel, shape, category)
+        self._create_legend(self.width, shape_dict)
+
+    def _draw_axes(self):
         # Adjust the placement of x and y axes based on the values in the data
-        origin_x = padding + (0 - x_min) * x_scale
-        origin_y = height - padding - (0 - y_min) * y_scale
+        origin_x = self.padding + (0 - self.x_min) * self.x_scale
+        origin_y = self.height - self.padding - (0 - self.y_min) * self.y_scale
 
         # Check the ranges of x and y values and adjust the axes accordingly
-        if x_min <= 0 <= x_max:
+        if self.x_min <= 0 <= self.x_max:
             y_axis_x_pos = origin_x
-        elif x_min >= 0:
-            y_axis_x_pos = padding
+        elif self.x_min >= 0:
+            y_axis_x_pos = self.padding
         else:  # x_max <= 0
-            y_axis_x_pos = width - padding
+            y_axis_x_pos = self.width - self.padding
 
-        if y_min <= 0 <= y_max:
+        if self.y_min <= 0 <= self.y_max:
             x_axis_y_pos = origin_y
-        elif y_min >= 0:
-            x_axis_y_pos = height - padding
+        elif self.y_min >= 0:
+            x_axis_y_pos = self.height - self.padding
         else:  # y_max <= 0
-            x_axis_y_pos = padding
+            x_axis_y_pos = self.padding
 
         # Draw x and y axes based on adjusted positions
         self.create_line(
-            padding, x_axis_y_pos, width - padding, x_axis_y_pos, fill="black"
+            self.padding,
+            x_axis_y_pos,
+            self.width - self.padding,
+            x_axis_y_pos,
+            fill="black",
         )
         self.create_line(
-            y_axis_x_pos, height - padding, y_axis_x_pos, padding, fill="black"
+            y_axis_x_pos,
+            self.height - self.padding,
+            y_axis_x_pos,
+            self.padding,
+            fill="black",
         )
 
         nr_of_ticks = 6
 
-        x_ticks = self._generate_tick_values(x_min, x_max, nr_of_ticks)
-        y_ticks = self._generate_tick_values(y_min, y_max, nr_of_ticks)
+        self._draw_tick_values(nr_of_ticks, x_axis_y_pos, y_axis_x_pos)
 
         # WIP
         # self.draw_ticks(nr_of_ticks, x_ticks, y_ticks)
+
+    def _draw_tick(self, x, y, value, horizontal=False):
+        tick_length = 5
+        tick_width = 2
+
+        if horizontal:
+            self.create_line(x, y, x, y + tick_length, fill="black", width=tick_width)
+            self.create_text(x, y + tick_length + 5, text=value, anchor="n")
+        else:
+            self.create_line(x, y, x - tick_length, y, fill="black", width=tick_width)
+            self.create_text(x - tick_length - 5, y, text=value, anchor="e")
+
+    def _draw_tick_values(self, nr_of_ticks, x_axis_y_pos, y_axis_x_pos):
+        x_ticks = np.linspace(self.x_min, self.x_max, nr_of_ticks)
+        y_ticks = np.linspace(self.y_min, self.y_max, nr_of_ticks)
+
+        x_pixels = [self.padding + (x - self.x_min) * self.x_scale for x in x_ticks]
+        y_pixels = [
+            self.height - (self.padding + (y - self.y_min) * self.y_scale)
+            for y in y_ticks
+        ]
+
+        for x, value in zip(x_pixels, x_ticks):
+            value = round(value, 2)  # Round to two decimal points
+            self._draw_tick(x, x_axis_y_pos, value, horizontal=True)
+        for y, value in zip(y_pixels, y_ticks):
+            value = round(value, 2)  # Round to two decimal points
+            self._draw_tick(y_axis_x_pos, y, value, horizontal=False)
 
     def _create_legend(self, width, shape_dict):
         legend_frame = tk.Frame(self.master, bg="white", bd=1, relief="solid")
