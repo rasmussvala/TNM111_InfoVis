@@ -65,7 +65,7 @@ class ScatterPlot(tk.Canvas):
 
     def _create_legend(self, width, shape_dict):
         legend_frame = tk.Frame(self.master, bg="white", bd=1, relief="solid")
-        legend_frame.place(x=width + 15, y=50)
+        legend_frame.place(x=width - 10, y=50)
 
         row = 0
         for category, shape in shape_dict.items():
@@ -98,7 +98,7 @@ if __name__ == "__main__":
     win.title("Scatter Plot")
     win.geometry("850x650")
 
-    data = pd.read_csv("data1.csv")
+    data = pd.read_csv("data2.csv")
 
     scatter_plot = ScatterPlot(data, win, width=800, height=600)
     scatter_plot.pack()
