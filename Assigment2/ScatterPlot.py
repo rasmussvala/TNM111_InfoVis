@@ -10,6 +10,21 @@ class ScatterPlot(tk.Canvas):
         self.data = data
         self.plot()
 
+    def generate_tick_values(self, min_value, max_value, nr_of_ticks):
+        step_size = round((max_value - min_value) / (nr_of_ticks - 1))
+
+        round_min = round(min_value)
+
+        # Generate the ticks
+        ticks = [round_min + i * step_size for i in range(nr_of_ticks)]
+
+        return ticks
+
+    def draw_ticks(self, nr_of_ticks, x_ticks, y_ticks):
+        print(nr_of_ticks)
+        print(x_ticks)
+        print(y_ticks)
+
     def plot(self):
         # Check if data is available
         if self.data.empty:
@@ -34,13 +49,20 @@ class ScatterPlot(tk.Canvas):
         for index, row in self.data.iterrows():
             x = row[0]
             y = row[1]
+
             x_pixel = padding + (x - x_min) * x_scale
             y_pixel = plot_height - (padding + (y - y_min) * y_scale)
+
+            radius = 3
             self.create_oval(
-                x_pixel - 3, y_pixel - 3, x_pixel + 3, y_pixel + 3, fill="blue"
+                x_pixel - radius,
+                y_pixel - radius,
+                x_pixel + radius,
+                y_pixel + radius,
+                fill="blue",
             )
 
-        # Adjust the placement of x and y axes based on the minimum values
+        # Adjust the placement of x and y axes based on the values in the data
         origin_x = padding + (0 - x_min) * x_scale
         origin_y = plot_height - padding - (0 - y_min) * y_scale
 
@@ -66,6 +88,14 @@ class ScatterPlot(tk.Canvas):
         self.create_line(
             y_axis_x_pos, plot_height - padding, y_axis_x_pos, padding, fill="black"
         )
+
+        nr_of_ticks = 6
+
+        x_ticks = self.generate_tick_values(x_min, x_max, nr_of_ticks)
+        y_ticks = self.generate_tick_values(y_min, y_max, nr_of_ticks)
+
+        # WIP
+        self.draw_ticks(nr_of_ticks, x_ticks, y_ticks)
 
 
 # Main
