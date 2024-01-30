@@ -28,7 +28,7 @@ class ScatterPlot(tk.Canvas):
         self._draw_data()
         self._draw_axes()
 
-    def _plot_shape(self, x, y, shape, parent=None **kwargs):
+    def _plot_shape(self, x, y, shape, parent=None, **kwargs):
         parent = parent or self
         if shape == "circle":
             parent.create_oval(x - 3, y - 3, x + 3, y + 3, fill="blue", **kwargs)
@@ -42,7 +42,7 @@ class ScatterPlot(tk.Canvas):
         x0, y0 = x, y - half_height
         x1, y1 = x - half_width, y + half_height
         x2, y2 = x + half_width, y + half_height
-        parent.create_polygon(x0, y0, x1, y1, x2, y2, fill="blue", **kwargs)
+        parent.create_polygon(x0, y0, x1, y1, x2, y2,outline="black", fill="blue", **kwargs)
 
     def _draw_data(self):
         shape_dict = {
@@ -57,8 +57,8 @@ class ScatterPlot(tk.Canvas):
             x, y, category = row[0], row[1], row[2]
             x_pixel = self.padding + (x - self.x_min) * self.x_scale
             y_pixel = self.height - (self.padding + (y - self.y_min) * self.y_scale)
-            shape = shape_dict.get(category, "circle")
-            self._plot_shape(x_pixel, y_pixel, shape)
+            shape = shape_dict.get(category)
+            self._plot_shape(x_pixel, y_pixel, shape, tags="data_point")
         self._create_legend(self.width, shape_dict)
 
     def _draw_axes(self):
@@ -170,8 +170,82 @@ class ScatterPlot(tk.Canvas):
                     self._right_click(item)
                     break
 
+    def _item_center(self, item):
+        item_type = self.type(item)
+        if item_type == "rectangle":
+            x1, y1, x2, y2 = self.coords(item)
+            return (x1 + x2) / 2, (y1 + y2) / 2
+        elif item_type == "oval":
+            x1, y1, x2, y2 = self.bbox(item)
+            return (x1 + x2) / 2, (y1 + y2) / 2
+        elif item_type == "polygon":
+            coords = self.coords(item)
+            x_values = coords[::2]
+            y_values = coords[1::2]
+            x_center = sum(x_values) / len(x_values)
+            y_center = sum(y_values) / len(y_values)
+            return x_center, y_center
+        else:
+            return None  # Handle other item types or return None if not rectangle, oval, or polygon
+
     def _left_click(self, item):
-        print("vänster")
+        if item is self.left_selected:
+            self.delete("quad_axis")
+            self.left_selected = None
+            for item in self.find_withtag("data_point"):
+                self.itemconfig(item, fill="blue")
+        else:
+            self.left_selected = item
+            origin = self._item_center(item);
+            self._quadrant_axis(origin)
+            self._color_by_quadrant(origin)
+            self.itemconfig(item, fill="purple")
+
+    def _quadrant_axis(self, origin):
+        self.delete("quad_axis")
+
+        self.create_line(
+            self.padding,
+            origin[1],
+            self.width - self.padding,
+            origin[1],
+            fill="gray",
+            tags="quad_axis"
+        )
+        self.create_line(
+            origin[0],
+            self.height - self.padding,
+            origin[0],
+            self.padding,
+            fill="gray",
+            tags="quad_axis"
+        )
+
+    def _color_by_quadrant(self, origin):
+            # Define colors for each quadrant
+        colors = {
+            1: "green",
+            2: "blue",
+            3: "red",
+            4: "yellow",
+        }
+        for item in self.find_withtag("data_point"):
+            # Determine the quadrant
+            quadrant = self._get_quadrant(self._item_center(item), origin)
+
+            # Set the color based on the quadrant
+            self.itemconfig(item, fill=colors.get(quadrant, "black"))
+
+    def _get_quadrant(self, pos, origin) -> int:
+        if pos[0] >= origin[0] and pos[1] >= origin[1]:
+            return 1
+        elif pos[0] < origin[0] and pos[1] >= origin[1]:
+            return 2
+        elif pos[0] < origin[0] and pos[1] < origin[1]:
+            return 3
+        elif pos[0] >= origin[0] and pos[1] < origin[1]:
+            return 4
+        return 0
 
     def _right_click(self, item):
         print("höger!")
@@ -183,7 +257,7 @@ if __name__ == "__main__":
     win.title("Scatter Plot")
     win.geometry("850x650")
 
-    data = pd.read_csv("data1.csv")
+    data = pd.read_csv("data2.csv")
 
     scatter_plot = ScatterPlot(data, win, width=800, height=600)
     scatter_plot.pack()
