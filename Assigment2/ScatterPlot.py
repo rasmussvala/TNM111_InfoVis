@@ -16,6 +16,9 @@ class ScatterPlot(tk.Canvas):
         self.x_scale = (self.width - 2 * self.padding) / (self.x_max - self.x_min)
         self.y_scale = (self.height - 2 * self.padding) / (self.y_max - self.y_min)
 
+        self.left_selected = None
+        self.right_selected = None
+
         self.plot()
 
     def plot(self):
@@ -25,23 +28,21 @@ class ScatterPlot(tk.Canvas):
         self._draw_data()
         self._draw_axes()
 
-    def _plot_shape(self, x, y, shape, category, parent=None):
+    def _plot_shape(self, x, y, shape, parent=None):
         parent = parent or self
         if shape == "circle":
-            parent.create_oval(x - 3, y - 3, x + 3, y + 3, fill="blue", tags=category)
+            parent.create_oval(x - 3, y - 3, x + 3, y + 3, fill="blue")
         elif shape == "triangle":
-            self._create_triangle(x, y, category, parent)
+            self._create_triangle(x, y, parent)
         elif shape == "square":
-            parent.create_rectangle(
-                x - 3, y - 3, x + 3, y + 3, fill="blue", tags=category
-            )
+            parent.create_rectangle(x - 3, y - 3, x + 3, y + 3, fill="blue")
 
-    def _create_triangle(self, x, y, category, parent):
+    def _create_triangle(self, x, y, parent):
         half_width = half_height = 5
         x0, y0 = x, y - half_height
         x1, y1 = x - half_width, y + half_height
         x2, y2 = x + half_width, y + half_height
-        parent.create_polygon(x0, y0, x1, y1, x2, y2, fill="blue", tags=category)
+        parent.create_polygon(x0, y0, x1, y1, x2, y2, fill="blue")
 
     def _draw_data(self):
         shape_dict = {
@@ -57,7 +58,7 @@ class ScatterPlot(tk.Canvas):
             x_pixel = self.padding + (x - self.x_min) * self.x_scale
             y_pixel = self.height - (self.padding + (y - self.y_min) * self.y_scale)
             shape = shape_dict.get(category, "circle")
-            self._plot_shape(x_pixel, y_pixel, shape, category)
+            self._plot_shape(x_pixel, y_pixel, shape)
         self._create_legend(self.width, shape_dict)
 
     def _draw_axes(self):
@@ -99,9 +100,6 @@ class ScatterPlot(tk.Canvas):
         nr_of_ticks = 6
 
         self._draw_tick_values(nr_of_ticks, x_axis_y_pos, y_axis_x_pos)
-
-        # WIP
-        # self.draw_ticks(nr_of_ticks, x_ticks, y_ticks)
 
     def _draw_tick(self, x, y, value, horizontal=False):
         tick_length = 5
@@ -156,9 +154,27 @@ class ScatterPlot(tk.Canvas):
                 highlightthickness=0,
             )
             shape_canvas.grid(row=row, column=0, sticky="e", pady=2)
-            self._plot_shape(10, 10, shape, "", parent=shape_canvas)
+            self._plot_shape(10, 10, shape, parent=shape_canvas)
 
             row += 1
+
+    def _point_clicked(self, event):
+        x, y = event.x, event.y
+
+        for item in self.find_overlapping(x - 1, y - 1, x + 1, y + 1):
+            if item:
+                if event.num == 1:  # Left-click
+                    self._left_click(item)
+                    break
+                elif event.num == 3:  # Right-click
+                    self._right_click(item)
+                    break
+
+    def _left_click(self, item):
+        print("vänster")
+
+    def _right_click(self, item):
+        print("höger!")
 
 
 if __name__ == "__main__":
@@ -171,5 +187,9 @@ if __name__ == "__main__":
 
     scatter_plot = ScatterPlot(data, win, width=800, height=600)
     scatter_plot.pack()
+
+    # Bind the click events to the _point_clicked method
+    scatter_plot.bind("<Button-1>", scatter_plot._point_clicked)  # Left-click
+    scatter_plot.bind("<Button-3>", scatter_plot._point_clicked)  # Right-click
 
     win.mainloop()
