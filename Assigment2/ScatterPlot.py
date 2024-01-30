@@ -180,7 +180,9 @@ class ScatterPlot(tk.Canvas):
         # Select new point - no point is currently selected
         if self.right_selected is None:
             self.right_selected = clicked_point
-            neighbors = self._find_neighbors(clicked_point, num_neighbors=5)
+            neighbors = self._find_neighbors(
+                clicked_point, num_neighbors=6
+            )  # Includes the clicked point
             self._highlight_points(neighbors)
         else:
             # Remove selection - unhighlight the points
@@ -214,7 +216,7 @@ class ScatterPlot(tk.Canvas):
         return neighbors
 
     def _highlight_points(self, points):
-        for point in points:
+        for i, point in enumerate(points):
             x_pixel = self.padding + (point[0] - self.x_min) * self.x_scale
             y_pixel = self.height - (
                 self.padding + (point[1] - self.y_min) * self.y_scale
@@ -224,7 +226,7 @@ class ScatterPlot(tk.Canvas):
                 y_pixel - 7,
                 x_pixel + 7,
                 y_pixel + 7,
-                outline="red",
+                outline="green" if i == 0 else "red",
                 width=2,
             )
             self.addtag_withtag("highlight", oval_id)
