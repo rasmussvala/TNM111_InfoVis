@@ -43,7 +43,9 @@ class ScatterPlot(tk.Canvas):
         x0, y0 = x, y - half_height
         x1, y1 = x - half_width, y + half_height
         x2, y2 = x + half_width, y + half_height
-        parent.create_polygon(x0, y0, x1, y1, x2, y2,outline="black", fill="blue", **kwargs)
+        parent.create_polygon(
+            x0, y0, x1, y1, x2, y2, outline="black", fill="blue", **kwargs
+        )
 
     def _draw_data(self):
         shape_dict = {
@@ -197,7 +199,7 @@ class ScatterPlot(tk.Canvas):
                 self.itemconfig(item, fill="blue")
         else:
             self.left_selected = item
-            origin = self._item_center(item);
+            origin = self._item_center(item)
             self._quadrant_axis(origin)
             self._color_by_quadrant(origin)
             self.itemconfig(item, fill="purple")
@@ -211,7 +213,7 @@ class ScatterPlot(tk.Canvas):
             self.width - self.padding,
             origin[1],
             fill="gray",
-            tags="quad_axis"
+            tags="quad_axis",
         )
         self.create_line(
             origin[0],
@@ -219,11 +221,11 @@ class ScatterPlot(tk.Canvas):
             origin[0],
             self.padding,
             fill="gray",
-            tags="quad_axis"
+            tags="quad_axis",
         )
 
     def _color_by_quadrant(self, origin):
-            # Define colors for each quadrant
+        # Define colors for each quadrant
         colors = {
             1: "green",
             2: "blue",
@@ -268,7 +270,9 @@ class ScatterPlot(tk.Canvas):
             else:
                 self._unhighlight_points()
                 self.right_selected = clicked_point
-                neighbors = self._find_neighbors(clicked_point, num_neighbors=5)
+                neighbors = self._find_neighbors(
+                    clicked_point, num_neighbors=6
+                )  # Includes the clicked point
                 self._highlight_points(neighbors)
 
     def _get_data_point(self, x, y):
