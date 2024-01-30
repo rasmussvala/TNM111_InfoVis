@@ -1,3 +1,4 @@
+import math
 import tkinter as tk
 import pandas as pd
 import numpy as np
@@ -167,7 +168,7 @@ class ScatterPlot(tk.Canvas):
                     self._left_click(item)
                     break
                 elif event.num == 3:  # Right-click
-                    self._right_click(item)
+                    self._right_click(x, y)
                     break
 
     def _item_center(self, item):
@@ -247,8 +248,68 @@ class ScatterPlot(tk.Canvas):
             return 4
         return 0
 
-    def _right_click(self, item):
-        print("höger!")
+    def _right_click(self, x, y):
+        clicked_point = self._get_data_point(x, y)
+
+        # Select new point - no point is currently selected
+        if self.right_selected is None:
+            self.right_selected = clicked_point
+            neighbors = self._find_neighbors(
+                clicked_point, num_neighbors=6
+            )  # Includes the clicked point
+            self._highlight_points(neighbors)
+        else:
+            # Remove selection - unhighlight the points
+            if clicked_point == self.right_selected:
+                self._unhighlight_points()
+                self.right_selected = None
+
+            # Select new point - a point is already currently selected
+            else:
+                self._unhighlight_points()
+                self.right_selected = clicked_point
+                neighbors = self._find_neighbors(clicked_point, num_neighbors=5)
+                self._highlight_points(neighbors)
+
+    def _get_data_point(self, x, y):
+        # Convert pixel coordinates to data coordinates
+        x_data = (x - self.padding) / self.x_scale + self.x_min
+        y_data = (self.height - y - self.padding) / self.y_scale + self.y_min
+        return (round(x_data), round(y_data))
+
+    def _calculate_distance(self, point1, point2):
+        return math.sqrt((point1[0] - point2[0]) ** 2 + (point1[1] - point2[1]) ** 2)
+
+    def _find_neighbors(self, center_point, num_neighbors=5):
+        distances = [
+            (self._calculate_distance(center_point, (row[0], row[1])), (row[0], row[1]))
+            for _, row in self.data.iterrows()
+        ]
+        distances.sort()  # Sort by distance
+        neighbors = [point[1] for point in distances[:num_neighbors]]
+        return neighbors
+
+    def _highlight_points(self, points):
+        for i, point in enumerate(points):
+            x_pixel = self.padding + (point[0] - self.x_min) * self.x_scale
+            y_pixel = self.height - (
+                self.padding + (point[1] - self.y_min) * self.y_scale
+            )
+            oval_id = self.create_oval(
+                x_pixel - 7,
+                y_pixel - 7,
+                x_pixel + 7,
+                y_pixel + 7,
+                outline="green" if i == 0 else "red",
+                width=2,
+            )
+            self.addtag_withtag("highlight", oval_id)
+
+    def _unhighlight_points(self):
+        # Remove all highlighted points
+        highlighted_points = self.find_withtag("highlight")
+        for item in highlighted_points:
+            self.delete(item)
 
 
 if __name__ == "__main__":
