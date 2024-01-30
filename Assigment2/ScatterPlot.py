@@ -28,21 +28,21 @@ class ScatterPlot(tk.Canvas):
         self._draw_data()
         self._draw_axes()
 
-    def _plot_shape(self, x, y, shape, parent=None):
+    def _plot_shape(self, x, y, shape, parent=None **kwargs):
         parent = parent or self
         if shape == "circle":
-            parent.create_oval(x - 3, y - 3, x + 3, y + 3, fill="blue")
+            parent.create_oval(x - 3, y - 3, x + 3, y + 3, fill="blue", **kwargs)
         elif shape == "triangle":
-            self._create_triangle(x, y, parent)
+            self._create_triangle(x, y, parent, **kwargs)
         elif shape == "square":
-            parent.create_rectangle(x - 3, y - 3, x + 3, y + 3, fill="blue")
+            parent.create_rectangle(x - 3, y - 3, x + 3, y + 3, fill="blue", **kwargs)
 
-    def _create_triangle(self, x, y, parent):
+    def _create_triangle(self, x, y, parent, **kwargs):
         half_width = half_height = 5
         x0, y0 = x, y - half_height
         x1, y1 = x - half_width, y + half_height
         x2, y2 = x + half_width, y + half_height
-        parent.create_polygon(x0, y0, x1, y1, x2, y2, fill="blue")
+        parent.create_polygon(x0, y0, x1, y1, x2, y2, fill="blue", **kwargs)
 
     def _draw_data(self):
         shape_dict = {
