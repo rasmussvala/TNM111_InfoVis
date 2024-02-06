@@ -77,7 +77,10 @@ function focusPlusContext(data) {
 
   let brush = d3
     .brushX()
-    .extent([0, 0], [width, height2])
+    .extent([
+      [0, 0],
+      [width, height2],
+    ])
     .on("brush end", brushed);
 
   //Setting scale parameters
