@@ -67,7 +67,7 @@ function focusPlusContext(data) {
    * Task 3 - Define scales and axes for context (Navigation through the data)
    */
 
-  let navXScale = d3.scaleTime().range([width, 0]);
+  let navXScale = d3.scaleTime().range([0, width]);
   let navYScale = d3.scaleLinear().range([height2, 0]);
   let navXAxis = d3.axisBottom(navXScale);
 
@@ -164,10 +164,13 @@ function focusPlusContext(data) {
   /**
    * Task 10 - Call x and y axis
    */
-  focus.append("g");
-  //here..
-  focus.append("g");
-  //here..
+  focus
+    .append("g")
+    .attr("class", "axis axis--x")
+    .attr("transform", "translate(0," + height + ")")
+    .call(xAxis);
+
+  focus.append("g").attr("class", "axis axis-y").call(yAxis);
 
   //Add y axis label to the scatter plot
   d3.select(".legend").style("left", "170px").style("top", "300px");
@@ -187,7 +190,11 @@ function focusPlusContext(data) {
    */
   selected_dots = dots
     .selectAll("dot")
-    //here..
+    .data(data.features)
+    .enter()
+    .append("circle")
+    .attr("class", "dot")
+    .attr("opacity", 0.8)
     .filter(function (d) {
       return d.properties.EQ_PRIMARY != null;
     })
@@ -197,11 +204,13 @@ function focusPlusContext(data) {
     .attr("cy", function (d) {
       return yScale(d.properties.EQ_PRIMARY);
     });
-
   /**
    * Task 12 - Call plot function
    * plot(points,nr,nr) no need to send any integers!
    */
+
+  let points_selected = new Points();
+  points.plot(selected_dots);
 
   //<---------------------------------------------------------------------------------------------------->
 
@@ -216,6 +225,19 @@ function focusPlusContext(data) {
       /**
        * Task 13 - Update information in the "tooltip" by calling the tooltip function.
        */
+
+      points_selected.tooltip(d);
+
+      //Rescale the dots onhover
+      d3.select(this).attr("r", 15);
+
+      //Rescale the dots on the map.
+      curent_id = d3.select(this)._groups[0][0].__data__.id.toString();
+      d3.selectAll(".mapcircle")
+        .filter(function (d) {
+          return d.id === curent_id;
+        })
+        .attr("r", 15);
 
       //Rescale the dots onhover
       d3.select(this).attr("r", 15);
@@ -272,8 +294,11 @@ function focusPlusContext(data) {
    * The brush function is trying to access things in scatter plot which are not yet
    * implmented if we put the brush before.
    */
-
-  //here..
+  context
+    .append("g")
+    .attr("class", "brush")
+    .call(brush)
+    .call(brush.move, xScale.range());
 
   //<---------------------------------------------------------------------------------------------------->
 
