@@ -52,17 +52,33 @@ function focusPlusContext(data) {
    * Task 1 - Parse date with timeParse to year-month-day
    */
 
+  let parseDate = d3.timeParse("%Y-%m-%d");
+
   /**
    * Task 2 - Define scales and axes for scatterplot
    */
+
+  let xScale = d3.scaleTime().range([0, width]);
+  let yScale = d3.scaleLinear().range([height, 0]);
+  let xAxis = d3.axisBottom(xScale);
+  let yAxis = d3.axisLeft(yScale);
 
   /**
    * Task 3 - Define scales and axes for context (Navigation through the data)
    */
 
+  let navXScale = d3.scaleTime().range([width, 0]);
+  let navYScale = d3.scaleLinear().range([height2, 0]);
+  let navXAxis = d3.axisBottom(navXScale);
+
   /**
    * Task 4 - Define the brush for the context graph (Navigation)
    */
+
+  let brush = d3
+    .brushX()
+    .extent([0, 0], [width, height2])
+    .on("brush end", brushed);
 
   //Setting scale parameters
   var maxDate = d3.max(data.features, function (d) {
@@ -85,6 +101,11 @@ function focusPlusContext(data) {
    * Task 5 - Set the axes scales, both for focus and context.
    */
 
+  xScale.domain([minDate, maxDate_plus]);
+  yScale.domain([0, maxMag]);
+  navXScale.domain(xScale.domain());
+  navYScale.domain(yScale.domain());
+
   //<---------------------------------------------------------------------------------------------------->
 
   /**
@@ -101,15 +122,17 @@ function focusPlusContext(data) {
   context
     .append("g")
     .attr("class", "axis axis--x")
-    .attr("transform", "translate(0," + height2 + ")");
-  //here..
-
+    .attr("transform", "translate(0," + height2 + ")")
+    .call(navXAxis);
   /**
    * Task 7 - Plot the small dots on the context graph.
    */
   small_points = dots
     .selectAll("dot")
-    //here...
+    .data(data.features)
+    .enter()
+    .append("circle")
+    .attr("class", "dotContext")
     .filter(function (d) {
       return d.properties.EQ_PRIMARY != null;
     })
@@ -124,6 +147,9 @@ function focusPlusContext(data) {
    * Task 8 - Call plot function.
    * plot(points,nr,nr) try to use different numbers for the scaling.
    */
+
+  let points = new Points();
+  points.plot(small_points, 2, 2);
 
   //<---------------------------------------------------------------------------------------------------->
 
@@ -283,7 +309,7 @@ function focusPlusContext(data) {
       /**
        * Remove comment for updating dots on the map.
        */
-      //curr_points_view = world_map.change_map_points(curr_view_erth)
+      curr_points_view = world_map.change_map_points(curr_view_erth);
     }
   }
 
