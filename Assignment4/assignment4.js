@@ -1,1 +1,5 @@
-d3.select("body").append("p").text("Hello from D3!");
+const data = d3.json(
+  "./starwars-interactions/starwars-full-interactions-allCharacters.json"
+);
+
+console.log(data);
