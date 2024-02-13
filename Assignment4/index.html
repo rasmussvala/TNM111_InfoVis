@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -9,28 +8,31 @@
     <style>
       svg {
         border: 1px solid lightgray;
+        width: 100%;
       }
 
       line {
         stroke: #f30000;
       }
+
+      .visualization-container {
+        display: flex;
+      }
     </style>
   </head>
-
   <body>
-    <script src="assignment4.js" type="module"></script>
-
-    <div id="visualization">
-      <svg width="400" height="300" id="diagram1">
+    <div class="visualization-container">
+      <svg viewBox="0 0 400 300" id="diagram1">
         <g class="links"></g>
         <g class="nodes"></g>
       </svg>
-      <svg width="400" height="300" id="diagram2">
+      <svg viewBox="0 0 400 300" id="diagram2">
         <g class="links"></g>
         <g class="nodes"></g>
       </svg>
-      <div id="control-panel">control-panel</div>
     </div>
-  </body>
+    <div id="control-panel">control-panel</div>
 
+    <script src="assignment4.js" type="module"></script>
+  </body>
 </html>

@@ -72,5 +72,21 @@ const createDiagram = (svgId, data) => {
   }
 };
 
+// Function to be called on resize:
+function resizeVisualization() {
+  const containerWidth = document.querySelector(
+    ".visualization-container"
+  ).offsetWidth;
+  const newWidth = containerWidth;
+  const newHeight = newWidth / 3; // Maintain aspect ratio
+
+  d3.select("#diagram1").attr("width", newWidth).attr("height", newHeight);
+
+  d3.select("#diagram2").attr("width", newWidth).attr("height", newHeight);
+}
+
+// Listen for resize events
+window.addEventListener("resize", resizeVisualization);
+
 createDiagram("diagram1", data);
 createDiagram("diagram2", data);
