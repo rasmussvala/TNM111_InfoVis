@@ -29,7 +29,7 @@ const createDiagram = (svgId, data) => {
     .range([minRadius, maxRadius]);
 
   // Create and configure the simulation
-  var simulation = d3
+  let simulation = d3
     .forceSimulation(data.nodes)
     .force("charge", d3.forceManyBody().strength(-100))
     .force("center", d3.forceCenter(width / 2, height / 2))
@@ -37,7 +37,8 @@ const createDiagram = (svgId, data) => {
     .on("tick", ticked);
 
   function updateLinks() {
-    d3.select(".links")
+    svg
+      .select(".links")
       .selectAll("line")
       .data(data.links)
       .join("line")
@@ -56,7 +57,8 @@ const createDiagram = (svgId, data) => {
   }
 
   function updateNodes() {
-    d3.select(".nodes")
+    svg
+      .select(".nodes")
       .selectAll("circle")
       .data(data.nodes)
       .join("circle")
@@ -66,9 +68,9 @@ const createDiagram = (svgId, data) => {
       .attr("cy", (d) => d.y);
   }
 
-  function ticked(svg) {
-    updateLinks(svg);
-    updateNodes(svg);
+  function ticked() {
+    updateLinks();
+    updateNodes();
   }
 };
 
