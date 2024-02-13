@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -9,15 +10,27 @@
       svg {
         border: 1px solid lightgray;
       }
+
+      line {
+        stroke: #f30000;
+      }
     </style>
   </head>
+
   <body>
     <script src="assignment4.js" type="module"></script>
 
     <div id="visualization">
-      <svg id="diagram1"></svg>
-      <svg id="diagram2"></svg>
+      <svg width="400" height="300" id="diagram1">
+        <g class="links"></g>
+        <g class="nodes"></g>
+      </svg>
+      <svg id="diagram2">
+        <g class="links"></g>
+        <g class="nodes"></g>
+      </svg>
       <div id="control-panel">control-panel</div>
     </div>
   </body>
+
 </html>
