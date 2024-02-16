@@ -2,8 +2,14 @@ var width = 400,
   height = 300;
 
 var data = await d3
+  .json("./starwars-interactions/starwars-full-interactions-allCharacters.json")
+  .catch(function (error) {
+    console.error("Error loading data:", error);
+  });
+
+var data2 = await d3
   .json(
-    "./starwars-interactions/starwars-episode-1-interactions-allCharacters.json"
+    "./starwars-interactions/starwars-episode-2-interactions-allCharacters.json"
   )
   .catch(function (error) {
     console.error("Error loading data:", error);
@@ -65,9 +71,7 @@ const createDiagram = (svgId, data) => {
       .data(data.nodes)
       .join("circle")
       .attr("r", (d) => sizeScale(d.value))
-      .attr("fill", (d) =>
-        previouslyClickedCircle === d ? "#ff0000" : d.colour
-      )
+      .attr("fill", (d) => d.colour)
       .attr("cx", (d) => d.x)
       .attr("cy", (d) => d.y)
       .attr("data-name", (d) => d.name)
@@ -79,43 +83,32 @@ const createDiagram = (svgId, data) => {
     updateNodes();
   }
 
-  function onClick(_event, d) {
-    const selectedCircleName = d.name;
+  function onClick() {
+    console.log("Click!");
+    // Find and update matching circle
+    function MatchingCircle(node) {
+      const name = d3.select(node).attr("data-name");
+      const otherSvgId = svgId === "diagram1" ? "diagram2" : "diagram1";
+      const otherSvg = d3.select(`#${otherSvgId}`);
+      const matchingCircle = otherSvg.select(`circle[data-name="${name}"]`);
 
-    // Find matching circle in other diagram and update
-    const otherSvgId = svgId === "diagram1" ? "diagram2" : "diagram1";
-    const otherSvg = d3.select(`#${otherSvgId}`);
-    const matchingCircle = otherSvg.select(
-      `circle[data-name="${selectedCircleName}"]`
-    );
+      return matchingCircle;
+    }
 
-    // Update this diagram
+    if (previouslyClickedCircle) {
+      d3.select(previouslyClickedCircle).attr("fill", (prevD) => prevD.colour);
+      MatchingCircle(previouslyClickedCircle).attr("fill", (d) => d.colour);
+    }
+
     if (previouslyClickedCircle === this) {
-      // Same circle clicked again, revert to original color
-      d3.select(this).attr("fill", d.colour);
       previouslyClickedCircle = null;
     } else {
-      // New circle clicked
       d3.select(this).attr("fill", "#ff0000");
-
-      // Reset and update previous circle (if any)
-      if (previouslyClickedCircle) {
-        d3.select(previouslyClickedCircle).attr(
-          "fill",
-          (prevD) => prevD.colour
-        );
-      }
+      MatchingCircle(this).attr("fill", "#ff0000");
       previouslyClickedCircle = this;
     }
-
-    // Check if matching circle exists
-    if (matchingCircle.node()) {
-      matchingCircle.attr(
-        "fill",
-        this === previouslyClickedCircle ? "#ff0000" : d.colour
-      );
-    }
   }
+  //updateMatchingCircle(this, d, previouslyClickedCircle);
 };
 
 // Function to be called on resize:
@@ -135,4 +128,4 @@ function resizeVisualization() {
 window.addEventListener("resize", resizeVisualization);
 
 createDiagram("diagram1", data);
-createDiagram("diagram2", data);
+createDiagram("diagram2", data2);
