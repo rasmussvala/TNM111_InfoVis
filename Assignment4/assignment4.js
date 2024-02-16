@@ -65,9 +65,12 @@ const createDiagram = (svgId, data) => {
       .data(data.nodes)
       .join("circle")
       .attr("r", (d) => sizeScale(d.value))
-      .attr("fill", (d) => d.colour)
+      .attr("fill", (d) =>
+        previouslyClickedCircle === d ? "#ff0000" : d.colour
+      )
       .attr("cx", (d) => d.x)
       .attr("cy", (d) => d.y)
+      .attr("data-name", (d) => d.name)
       .on("click", onClick);
   }
 
@@ -77,6 +80,16 @@ const createDiagram = (svgId, data) => {
   }
 
   function onClick(_event, d) {
+    const selectedCircleName = d.name;
+
+    // Find matching circle in other diagram and update
+    const otherSvgId = svgId === "diagram1" ? "diagram2" : "diagram1";
+    const otherSvg = d3.select(`#${otherSvgId}`);
+    const matchingCircle = otherSvg.select(
+      `circle[data-name="${selectedCircleName}"]`
+    );
+
+    // Update this diagram
     if (previouslyClickedCircle === this) {
       // Same circle clicked again, revert to original color
       d3.select(this).attr("fill", d.colour);
@@ -85,15 +98,22 @@ const createDiagram = (svgId, data) => {
       // New circle clicked
       d3.select(this).attr("fill", "#ff0000");
 
-      // Reset the previous circle (if any) to its original color
+      // Reset and update previous circle (if any)
       if (previouslyClickedCircle) {
         d3.select(previouslyClickedCircle).attr(
           "fill",
           (prevD) => prevD.colour
         );
       }
-
       previouslyClickedCircle = this;
+    }
+
+    // Check if matching circle exists
+    if (matchingCircle.node()) {
+      matchingCircle.attr(
+        "fill",
+        this === previouslyClickedCircle ? "#ff0000" : d.colour
+      );
     }
   }
 };
