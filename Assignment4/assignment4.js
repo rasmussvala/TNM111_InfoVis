@@ -9,6 +9,7 @@ var data = await d3
     console.error("Error loading data:", error);
   });
 
+console.log(data);
 const createDiagram = (svgId, data) => {
   const svg = d3.select(`#${svgId}`);
 
@@ -57,6 +58,7 @@ const createDiagram = (svgId, data) => {
   }
 
   function updateNodes() {
+    let previouslyClickedCircle;
     svg
       .select(".nodes")
       .selectAll("circle")
@@ -65,7 +67,27 @@ const createDiagram = (svgId, data) => {
       .attr("r", (d) => sizeScale(d.value))
       .attr("fill", (d) => d.colour)
       .attr("cx", (d) => d.x)
-      .attr("cy", (d) => d.y);
+      .attr("cy", (d) => d.y)
+      .on("click", function (_event, d) {
+        if (previouslyClickedCircle === this) {
+          // Same circle clicked again, revert to original color
+          d3.select(this).attr("fill", d.colour);
+          previouslyClickedCircle = null;
+        } else {
+          // New circle clicked
+          d3.select(this).attr("fill", "#ff0000");
+
+          // Reset the previous circle (if any) to its original color
+          if (previouslyClickedCircle) {
+            d3.select(previouslyClickedCircle).attr(
+              "fill",
+              (prevD) => prevD.colour
+            );
+          }
+
+          previouslyClickedCircle = this;
+        }
+      });
   }
 
   function ticked() {
