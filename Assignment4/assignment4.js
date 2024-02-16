@@ -2,7 +2,9 @@ var width = 400,
   height = 300;
 
 var data = await d3
-  .json("./starwars-interactions/starwars-full-interactions-allCharacters.json")
+  .json(
+    "./starwars-interactions/starwars-episode-4-interactions-allCharacters.json"
+  )
   .catch(function (error) {
     console.error("Error loading data:", error);
   });
@@ -15,7 +17,32 @@ var data2 = await d3
     console.error("Error loading data:", error);
   });
 
-console.log(data);
+function updateRangeSlider() {
+  // Calculate the maximum value
+  function findMaxEdgeValue() {
+    const combinedLinks = data.links.concat(data2.links);
+    let maxValue = -Infinity;
+
+    for (const link of combinedLinks) {
+      maxValue = Math.max(maxValue, link.value);
+    }
+
+    return maxValue;
+  }
+
+  // Get references to the HTML elements
+  const edgeWeightMaxInput = document.getElementById("edge-weight-range");
+  const edgeWeightMaxSpan = document.getElementById("edge-weight-max");
+
+  // Update the HTML with the calculated value
+  const maxInteractionValue = findMaxEdgeValue();
+  edgeWeightMaxInput.max = maxInteractionValue;
+  edgeWeightMaxSpan.textContent = maxInteractionValue;
+}
+
+// Call the function to execute the logic
+updateRangeSlider();
+
 const createDiagram = (svgId, data) => {
   const svg = d3.select(`#${svgId}`);
 
@@ -126,6 +153,12 @@ function resizeVisualization() {
 
 // Listen for resize events
 window.addEventListener("resize", resizeVisualization);
+
+function filterByEdgeWeight() {}
+
+function applyFilters() {}
+
+function updateDiagram() {}
 
 createDiagram("diagram1", data);
 createDiagram("diagram2", data2);
