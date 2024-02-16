@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -11,15 +12,12 @@
         width: 100%;
       }
 
-      line {
-        stroke: #f30000;
-      }
-
       .visualization-container {
         display: flex;
       }
     </style>
   </head>
+
   <body>
     <div class="visualization-container">
       <svg viewBox="0 0 400 300" id="diagram1">
@@ -32,7 +30,23 @@
       </svg>
     </div>
     <div id="control-panel">control-panel</div>
+    <div id="tooltip-diagram1">
+      <br>
+      <h5><strong>Character Info</strong></h5>
+      <hr>
+      <p><span class="name">Name</span></p>
+      <p><span class="value">Value</span></p>
+    </div>
+    <div id="tooltip-diagram2">
+      <br>
+      <h5><strong>Character Info</strong></h5>
+      <hr>
+      <p><span class="name">Name</span></p>
+      <p><span class="value">Value</span></p>
+    </div>
+
 
     <script src="assignment4.js" type="module"></script>
   </body>
+
 </html>

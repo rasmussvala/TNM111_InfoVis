@@ -16,6 +16,7 @@ var data2 = await d3
   });
 
 console.log(data);
+
 const createDiagram = (svgId, data) => {
   const svg = d3.select(`#${svgId}`);
 
@@ -27,8 +28,8 @@ const createDiagram = (svgId, data) => {
     return d.value;
   });
 
-  const minRadius = 10;
-  const maxRadius = 20;
+  const minRadius = 4;
+  const maxRadius = 10;
 
   const sizeScale = d3
     .scaleLinear()
@@ -38,7 +39,7 @@ const createDiagram = (svgId, data) => {
   // Create and configure the simulation
   let simulation = d3
     .forceSimulation(data.nodes)
-    .force("charge", d3.forceManyBody().strength(-100))
+    .force("charge", d3.forceManyBody().strength(-15))
     .force("center", d3.forceCenter(width / 2, height / 2))
     .force("link", d3.forceLink().links(data.links))
     .on("tick", ticked);
@@ -60,10 +61,10 @@ const createDiagram = (svgId, data) => {
       })
       .attr("y2", function (d) {
         return d.target.y;
-      });
+      })
+      .attr("stroke", "#E0E0E0");
   }
 
-  let previouslyClickedCircle;
   function updateNodes() {
     svg
       .select(".nodes")
@@ -75,7 +76,7 @@ const createDiagram = (svgId, data) => {
       .attr("cx", (d) => d.x)
       .attr("cy", (d) => d.y)
       .attr("data-name", (d) => d.name)
-      .on("click", onClick);
+      .on("click", onNoceClick);
   }
 
   function ticked() {
@@ -83,33 +84,40 @@ const createDiagram = (svgId, data) => {
     updateNodes();
   }
 
-  function onClick() {
-    console.log("Click!");
-    // Find and update matching circle
-    function MatchingCircle(node) {
-      const name = d3.select(node).attr("data-name");
-      const otherSvgId = svgId === "diagram1" ? "diagram2" : "diagram1";
-      const otherSvg = d3.select(`#${otherSvgId}`);
-      const matchingCircle = otherSvg.select(`circle[data-name="${name}"]`);
+  function onNoceClick() {
+    const node = d3.select(this);
+    const name = node.attr("data-name");
+    const otherSvgId = svgId === "diagram1" ? "diagram2" : "diagram1";
+    const otherSvg = d3.select(`#${otherSvgId}`);
+    const matchingCircle = otherSvg.select(`circle[data-name="${name}"]`);
 
-      return matchingCircle;
-    }
+    const resetAllNodes = () => {
+      d3.selectAll("circle")
+        .attr("fill", (d) => d.colour)
+        .classed("selected", false);
+    };
 
-    if (previouslyClickedCircle) {
-      d3.select(previouslyClickedCircle).attr("fill", (prevD) => prevD.colour);
-      MatchingCircle(previouslyClickedCircle).attr("fill", (d) => d.colour);
-    }
-
-    if (previouslyClickedCircle === this) {
-      previouslyClickedCircle = null;
+    if (node.classed("selected")) {
+      resetAllNodes();
     } else {
-      d3.select(this).attr("fill", "#ff0000");
-      MatchingCircle(this).attr("fill", "#ff0000");
-      previouslyClickedCircle = this;
+      resetAllNodes();
+      nodeTooltip(node, svgId);
+      nodeTooltip(matchingCircle, otherSvgId);
+      node.attr("fill", "#ff0000").classed("selected", true);
+      matchingCircle.attr("fill", "#ff0000").classed("selected", true);
     }
   }
-  //updateMatchingCircle(this, d, previouslyClickedCircle);
 };
+
+function nodeTooltip(node, svgId) {
+  let data = node.data()[0];
+  console.log(data);
+  var tooltip = d3.select(`#tooltip-${svgId}`);
+  if (tooltip) {
+    tooltip.select(".name").text("Name:" + data.name);
+    tooltip.select(".value").text("Value:" + data.value);
+  }
+}
 
 // Function to be called on resize:
 function resizeVisualization() {
