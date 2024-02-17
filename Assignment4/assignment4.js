@@ -1,6 +1,8 @@
 var width = 400,
   height = 300;
 
+const strokeColor = "#E0E0E0";
+
 var data = await d3
   .json(
     "./starwars-interactions/starwars-episode-1-interactions-allCharacters.json"
@@ -64,7 +66,7 @@ const createDiagram = (svgId, data) => {
       .attr("y2", function (d) {
         return d.target.y;
       })
-      .attr("stroke", "#E0E0E0")
+      .attr("stroke", strokeColor)
       .on("click", handleLinkClick);
   }
 
@@ -91,6 +93,7 @@ const createDiagram = (svgId, data) => {
     d3.selectAll("circle")
       .attr("fill", (d) => d.colour)
       .classed("selected", false);
+    d3.selectAll("line").attr("fill", strokeColor).classed("selected", false);
   };
 
   function handleNodeClick() {
@@ -115,40 +118,53 @@ const createDiagram = (svgId, data) => {
   }
 
   function handleLinkClick() {
-    const linkData = d3.select(this).data()[0];
+    const link = d3.select(this);
+    const linkData = link.data()[0];
     const source = linkData.source,
       target = linkData.target;
-
-    resetAllNodes();
-
-    const node1Element = svg.select(`circle[data-name="${source.name}"]`);
-    const node2Element = svg.select(`circle[data-name="${target.name}"]`);
 
     const otherSvgId = svgId === "diagram1" ? "diagram2" : "diagram1";
     const otherSvg = d3.select(`#${otherSvgId}`);
 
-    const matchingNode1 = otherSvg.select(`circle[data-name="${source.name}"]`);
-    const matchingNode2 = otherSvg.select(`circle[data-name="${target.name}"]`);
+    if (link.classed("selected")) {
+      resetAllNodes();
+      console.log("Was selected");
+      nodeTooltip(null, svgId);
+      nodeTooltip(null, otherSvgId);
+    } else {
+      resetAllNodes();
+      const node1Element = svg.select(`circle[data-name="${source.name}"]`);
+      const node2Element = svg.select(`circle[data-name="${target.name}"]`);
 
-    [node1Element, node2Element, matchingNode1, matchingNode2].forEach(
-      (node) => {
-        node.attr("fill", "#ff0000").classed("selected", true);
-      }
-    );
-    // Find matching link in the other SVG
-    const matchingLink = otherSvg
-      .selectAll("line")
-      .filter(
-        (d) => d.source.name === target.name && d.target.name === source.name
+      const matchingNode1 = otherSvg.select(
+        `circle[data-name="${source.name}"]`
+      );
+      const matchingNode2 = otherSvg.select(
+        `circle[data-name="${target.name}"]`
       );
 
-    linkTooltip(node1Element, node2Element, linkData.value, svgId);
-    linkTooltip(
-      matchingNode1,
-      matchingNode2,
-      matchingLink.data()[0] ? matchingLink.data()[0].value : -1,
-      otherSvgId
-    );
+      [node1Element, node2Element, matchingNode1, matchingNode2].forEach(
+        (node) => {
+          node.attr("fill", "#ff0000");
+        }
+      );
+      // Find matching link in the other SVG
+      const matchingLink = otherSvg
+        .selectAll("line")
+        .filter(
+          (d) => d.source.name === target.name && d.target.name === source.name
+        );
+      link.classed("selected", true);
+      matchingLink.classed("selected", true);
+
+      linkTooltip(node1Element, node2Element, linkData.value, svgId);
+      linkTooltip(
+        matchingNode1,
+        matchingNode2,
+        matchingLink.data()[0] ? matchingLink.data()[0].value : -1,
+        otherSvgId
+      );
+    }
   }
 };
 
