@@ -1,6 +1,27 @@
 var width = 400,
   height = 300;
 
+const data_files = [
+  "./starwars-interactions/starwars-episode-1-interactions-allCharacters.json",
+  "./starwars-interactions/starwars-episode-2-interactions-allCharacters.json",
+  "./starwars-interactions/starwars-episode-3-interactions-allCharacters.json",
+  "./starwars-interactions/starwars-episode-4-interactions-allCharacters.json",
+  "./starwars-interactions/starwars-episode-5-interactions-allCharacters.json",
+  "./starwars-interactions/starwars-episode-6-interactions-allCharacters.json",
+  "./starwars-interactions/starwars-episode-7-interactions-allCharacters.json",
+];
+
+let episodes = [];
+
+for (const url of data_files) {
+  try {
+    const data = await d3.json(url);
+    episodes.push(data);
+  } catch (error) {
+    console.error("Error loading data:", error);
+  }
+}
+
 var data = await d3
   .json("./starwars-interactions/starwars-full-interactions-allCharacters.json")
   .catch(function (error) {
@@ -135,5 +156,5 @@ function resizeVisualization() {
 // Listen for resize events
 window.addEventListener("resize", resizeVisualization);
 
-createDiagram("diagram1", data);
-createDiagram("diagram2", data2);
+createDiagram("diagram1", episodes[0]);
+createDiagram("diagram2", episodes[1]);
