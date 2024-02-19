@@ -4,15 +4,11 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
-    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="./lib/d3/d3.v7.min.js"></script>
     <style>
       svg {
         border: 1px solid lightgray;
         width: 100%;
-      }
-
-      line {
-        stroke: #f30000;
       }
 
       .visualization-container {
@@ -20,16 +16,11 @@
       }
     </style>
   </head>
+
   <body>
     <div class="visualization-container">
-      <svg viewBox="0 0 400 300" id="diagram1">
-        <g class="links"></g>
-        <g class="nodes"></g>
-      </svg>
-      <svg viewBox="0 0 400 300" id="diagram2">
-        <g class="links"></g>
-        <g class="nodes"></g>
-      </svg>
+      <svg viewBox="0 0 1920 1080" id="diagram1"></svg>
+      <svg viewBox="0 0 1920 1080" id="diagram2"></svg>
     </div>
     <div class="control-panel">
       <h3>Control Panel</h3>
@@ -46,6 +37,20 @@
         <span id="edge-weight-min">0</span> -
         <span id="edge-weight-max">10</span>
       </div>
+    </div>
+    <div id="tooltip-diagram1">
+      <br />
+      <h5><strong>Character Info</strong></h5>
+      <hr />
+      <p><span class="name">Name</span></p>
+      <p><span class="value">Value</span></p>
+    </div>
+    <div id="tooltip-diagram2">
+      <br />
+      <h5><strong>Character Info</strong></h5>
+      <hr />
+      <p><span class="name">Name</span></p>
+      <p><span class="value">Value</span></p>
     </div>
 
     <script src="assignment4.js" type="module"></script>

@@ -1,5 +1,4 @@
-var width = 400,
-  height = 300;
+const strokeColor = "#E0E0E0";
 
 var data = await d3
   .json(
@@ -44,7 +43,30 @@ function updateRangeSlider() {
 updateRangeSlider();
 
 const createDiagram = (svgId, data) => {
+  // Define SVG and its dimensions
   const svg = d3.select(`#${svgId}`);
+
+  const viewBox = svg.attr("viewBox").split(" ").map(parseFloat);
+  const width = viewBox[2];
+  const height = viewBox[3];
+
+  // Adjust the svg's dimensions to fill the SVG
+  svg.attr("width", "100%").attr("height", "100%");
+
+  const links = svg.append("g");
+  const nodes = svg.append("g");
+
+  let zoom = d3
+    .zoom()
+    .scaleExtent([0.1, 15]) // Set the scale extent
+    .on("zoom", handleZoom);
+
+  function handleZoom(e) {
+    nodes.attr("transform", e.transform);
+    links.attr("transform", e.transform);
+  }
+
+  svg.call(zoom);
 
   const minDomain = d3.min(data.nodes, function (d) {
     return d.value;
@@ -54,8 +76,8 @@ const createDiagram = (svgId, data) => {
     return d.value;
   });
 
-  const minRadius = 10;
-  const maxRadius = 20;
+  const minRadius = 25;
+  const maxRadius = 50;
 
   const sizeScale = d3
     .scaleLinear()
@@ -65,14 +87,16 @@ const createDiagram = (svgId, data) => {
   // Create and configure the simulation
   let simulation = d3
     .forceSimulation(data.nodes)
-    .force("charge", d3.forceManyBody().strength(-100))
+    .force(
+      "charge",
+      d3.forceManyBody().strength((d) => -1000)
+    )
     .force("center", d3.forceCenter(width / 2, height / 2))
     .force("link", d3.forceLink().links(data.links))
     .on("tick", ticked);
 
   function updateLinks() {
-    svg
-      .select(".links")
+    links
       .selectAll("line")
       .data(data.links)
       .join("line")
@@ -87,13 +111,14 @@ const createDiagram = (svgId, data) => {
       })
       .attr("y2", function (d) {
         return d.target.y;
-      });
+      })
+      .attr("stroke", strokeColor)
+      .on("click", handleLinkClick)
+      .attr("stroke-width", 4);
   }
 
-  let previouslyClickedCircle;
   function updateNodes() {
-    svg
-      .select(".nodes")
+    nodes
       .selectAll("circle")
       .data(data.nodes)
       .join("circle")
@@ -102,7 +127,7 @@ const createDiagram = (svgId, data) => {
       .attr("cx", (d) => d.x)
       .attr("cy", (d) => d.y)
       .attr("data-name", (d) => d.name)
-      .on("click", onClick);
+      .on("click", handleNodeClick);
   }
 
   function ticked() {
@@ -110,39 +135,127 @@ const createDiagram = (svgId, data) => {
     updateNodes();
   }
 
-  function onClick() {
-    console.log("Click!");
-    // Find and update matching circle
-    function MatchingCircle(node) {
-      const name = d3.select(node).attr("data-name");
-      const otherSvgId = svgId === "diagram1" ? "diagram2" : "diagram1";
-      const otherSvg = d3.select(`#${otherSvgId}`);
-      const matchingCircle = otherSvg.select(`circle[data-name="${name}"]`);
+  const resetAllNodes = () => {
+    d3.selectAll("circle")
+      .attr("fill", (d) => d.colour)
+      .classed("selected", false);
+    d3.selectAll("line").attr("fill", strokeColor).classed("selected", false);
+  };
 
-      return matchingCircle;
-    }
+  function handleNodeClick() {
+    const svgId = svg.attr("id");
+    const node = d3.select(this);
+    const name = node.attr("data-name");
+    const otherSvgId = svgId === "diagram1" ? "diagram2" : "diagram1";
+    const otherSvg = d3.select(`#${otherSvgId}`);
+    const matchingCircle = otherSvg.select(`circle[data-name="${name}"]`);
 
-    if (previouslyClickedCircle) {
-      d3.select(previouslyClickedCircle).attr("fill", (prevD) => prevD.colour);
-      MatchingCircle(previouslyClickedCircle).attr("fill", (d) => d.colour);
-    }
-
-    if (previouslyClickedCircle === this) {
-      previouslyClickedCircle = null;
+    if (node.classed("selected")) {
+      resetAllNodes();
+      nodeTooltip(null, svgId);
+      nodeTooltip(null, otherSvgId);
     } else {
-      d3.select(this).attr("fill", "#ff0000");
-      MatchingCircle(this).attr("fill", "#ff0000");
-      previouslyClickedCircle = this;
+      resetAllNodes();
+      nodeTooltip(node, svgId);
+      nodeTooltip(matchingCircle, otherSvgId);
+      node.attr("fill", "#ff0000").classed("selected", true);
+      matchingCircle.attr("fill", "#ff0000").classed("selected", true);
     }
   }
-  //updateMatchingCircle(this, d, previouslyClickedCircle);
+
+  function handleLinkClick() {
+    const link = d3.select(this);
+    const linkData = link.data()[0];
+    const source = linkData.source,
+      target = linkData.target;
+
+    const otherSvgId = svgId === "diagram1" ? "diagram2" : "diagram1";
+    const otherSvg = d3.select(`#${otherSvgId}`);
+
+    if (link.classed("selected")) {
+      resetAllNodes();
+      console.log("Was selected");
+      nodeTooltip(null, svgId);
+      nodeTooltip(null, otherSvgId);
+    } else {
+      resetAllNodes();
+      const node1Element = svg.select(`circle[data-name="${source.name}"]`);
+      const node2Element = svg.select(`circle[data-name="${target.name}"]`);
+
+      const matchingNode1 = otherSvg.select(
+        `circle[data-name="${source.name}"]`
+      );
+      const matchingNode2 = otherSvg.select(
+        `circle[data-name="${target.name}"]`
+      );
+
+      [node1Element, node2Element, matchingNode1, matchingNode2].forEach(
+        (node) => {
+          node.attr("fill", "#ff0000");
+        }
+      );
+      // Find matching link in the other SVG
+      const matchingLink = otherSvg
+        .selectAll("line")
+        .filter(
+          (d) => d.source.name === target.name && d.target.name === source.name
+        );
+      link.classed("selected", true);
+      matchingLink.classed("selected", true);
+
+      linkTooltip(node1Element, node2Element, linkData.value, svgId);
+      linkTooltip(
+        matchingNode1,
+        matchingNode2,
+        matchingLink.data()[0] ? matchingLink.data()[0].value : -1,
+        otherSvgId
+      );
+    }
+  }
 };
+
+function nodeTooltip(node, svgId) {
+  var tooltip = d3.select(`#tooltip-${svgId}`);
+  if (tooltip) {
+    if (node && node.data()[0]) {
+      let data = node.data()[0];
+      tooltip.select(".name").text("Name:" + data.name);
+      tooltip.select(".value").text("Value:" + data.value);
+    } else {
+      tooltip.select(".name").text("");
+      tooltip.select(".value").text("");
+    }
+  }
+}
+
+function linkTooltip(node1, node2, value, svgId) {
+  var tooltip = d3.select(`#tooltip-${svgId}`);
+  if (tooltip.node()) {
+    if (node1.data()[0] && node2.data()[0]) {
+      tooltip
+        .select(".name")
+        .text("Names:" + node1.data()[0].name + " & " + node2.data()[0].name);
+      tooltip.select(".value").text("Value:" + value);
+    } else if (node1.data()[0] || node2.data()[0]) {
+      const nodeName = node1.data()[0]
+        ? node1.data()[0].name
+        : node2.data()[0].name;
+      const nodeValue = node1.data()[0]
+        ? node1.data()[0].value
+        : node2.data()[0].value;
+      tooltip.select(".name").text("Name: " + nodeName);
+      tooltip.select(".value").text("Value: " + nodeValue);
+    } else {
+      tooltip.select(".name").text("");
+      tooltip.select(".value").text("");
+    }
+  }
+}
 
 // Function to be called on resize:
 function resizeVisualization() {
-  const containerWidth = document.querySelector(
-    ".visualization-container"
-  ).offsetWidth;
+  const containerWidth =
+    document.querySelector(".visualization-svg").offsetWidth;
   const newWidth = containerWidth;
   const newHeight = newWidth / 3; // Maintain aspect ratio
 
