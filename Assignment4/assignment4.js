@@ -1,8 +1,12 @@
 var width = 400,
   height = 300;
 
+const strokeColor = "#E0E0E0";
+
 var data = await d3
-  .json("./starwars-interactions/starwars-full-interactions-allCharacters.json")
+  .json(
+    "./starwars-interactions/starwars-episode-1-interactions-allCharacters.json"
+  )
   .catch(function (error) {
     console.error("Error loading data:", error);
   });
@@ -62,7 +66,8 @@ const createDiagram = (svgId, data) => {
       .attr("y2", function (d) {
         return d.target.y;
       })
-      .attr("stroke", "#E0E0E0");
+      .attr("stroke", strokeColor)
+      .on("click", handleLinkClick);
   }
 
   function updateNodes() {
@@ -76,7 +81,7 @@ const createDiagram = (svgId, data) => {
       .attr("cx", (d) => d.x)
       .attr("cy", (d) => d.y)
       .attr("data-name", (d) => d.name)
-      .on("click", onNoceClick);
+      .on("click", handleNodeClick);
   }
 
   function ticked() {
@@ -84,21 +89,25 @@ const createDiagram = (svgId, data) => {
     updateNodes();
   }
 
-  function onNoceClick() {
+  const resetAllNodes = () => {
+    d3.selectAll("circle")
+      .attr("fill", (d) => d.colour)
+      .classed("selected", false);
+    d3.selectAll("line").attr("fill", strokeColor).classed("selected", false);
+  };
+
+  function handleNodeClick() {
+    const svgId = svg.attr("id");
     const node = d3.select(this);
     const name = node.attr("data-name");
     const otherSvgId = svgId === "diagram1" ? "diagram2" : "diagram1";
     const otherSvg = d3.select(`#${otherSvgId}`);
     const matchingCircle = otherSvg.select(`circle[data-name="${name}"]`);
 
-    const resetAllNodes = () => {
-      d3.selectAll("circle")
-        .attr("fill", (d) => d.colour)
-        .classed("selected", false);
-    };
-
     if (node.classed("selected")) {
       resetAllNodes();
+      nodeTooltip(null, svgId);
+      nodeTooltip(null, otherSvgId);
     } else {
       resetAllNodes();
       nodeTooltip(node, svgId);
@@ -107,15 +116,93 @@ const createDiagram = (svgId, data) => {
       matchingCircle.attr("fill", "#ff0000").classed("selected", true);
     }
   }
+
+  function handleLinkClick() {
+    const link = d3.select(this);
+    const linkData = link.data()[0];
+    const source = linkData.source,
+      target = linkData.target;
+
+    const otherSvgId = svgId === "diagram1" ? "diagram2" : "diagram1";
+    const otherSvg = d3.select(`#${otherSvgId}`);
+
+    if (link.classed("selected")) {
+      resetAllNodes();
+      console.log("Was selected");
+      nodeTooltip(null, svgId);
+      nodeTooltip(null, otherSvgId);
+    } else {
+      resetAllNodes();
+      const node1Element = svg.select(`circle[data-name="${source.name}"]`);
+      const node2Element = svg.select(`circle[data-name="${target.name}"]`);
+
+      const matchingNode1 = otherSvg.select(
+        `circle[data-name="${source.name}"]`
+      );
+      const matchingNode2 = otherSvg.select(
+        `circle[data-name="${target.name}"]`
+      );
+
+      [node1Element, node2Element, matchingNode1, matchingNode2].forEach(
+        (node) => {
+          node.attr("fill", "#ff0000");
+        }
+      );
+      // Find matching link in the other SVG
+      const matchingLink = otherSvg
+        .selectAll("line")
+        .filter(
+          (d) => d.source.name === target.name && d.target.name === source.name
+        );
+      link.classed("selected", true);
+      matchingLink.classed("selected", true);
+
+      linkTooltip(node1Element, node2Element, linkData.value, svgId);
+      linkTooltip(
+        matchingNode1,
+        matchingNode2,
+        matchingLink.data()[0] ? matchingLink.data()[0].value : -1,
+        otherSvgId
+      );
+    }
+  }
 };
 
 function nodeTooltip(node, svgId) {
-  let data = node.data()[0];
-  console.log(data);
   var tooltip = d3.select(`#tooltip-${svgId}`);
   if (tooltip) {
-    tooltip.select(".name").text("Name:" + data.name);
-    tooltip.select(".value").text("Value:" + data.value);
+    if (node && node.data()[0]) {
+      let data = node.data()[0];
+      tooltip.select(".name").text("Name:" + data.name);
+      tooltip.select(".value").text("Value:" + data.value);
+    } else {
+      tooltip.select(".name").text("");
+      tooltip.select(".value").text("");
+    }
+  }
+}
+
+function linkTooltip(node1, node2, value, svgId) {
+  var tooltip = d3.select(`#tooltip-${svgId}`);
+  if (tooltip.node()) {
+    if (node1.data()[0] && node2.data()[0]) {
+      tooltip
+        .select(".name")
+        .text("Names:" + node1.data()[0].name + " & " + node2.data()[0].name);
+      tooltip.select(".value").text("Value:" + value);
+    } else if (node1.data()[0] || node2.data()[0]) {
+      const nodeName = node1.data()[0]
+        ? node1.data()[0].name
+        : node2.data()[0].name;
+      const nodeValue = node1.data()[0]
+        ? node1.data()[0].value
+        : node2.data()[0].value;
+      tooltip.select(".name").text("Name: " + nodeName);
+      tooltip.select(".value").text("Value: " + nodeValue);
+    } else {
+      tooltip.select(".name").text("");
+      tooltip.select(".value").text("");
+    }
   }
 }
 
