@@ -1,6 +1,3 @@
-var width = 400,
-  height = 300;
-
 const strokeColor = "#E0E0E0";
 
 var data = await d3
@@ -22,7 +19,30 @@ var data2 = await d3
 console.log(data);
 
 const createDiagram = (svgId, data) => {
+  // Define SVG and its dimensions
   const svg = d3.select(`#${svgId}`);
+
+  const viewBox = svg.attr("viewBox").split(" ").map(parseFloat);
+  const width = viewBox[2];
+  const height = viewBox[3];
+
+  // Adjust the svg's dimensions to fill the SVG
+  svg.attr("width", "100%").attr("height", "100%");
+
+  const links = svg.append("g");
+  const nodes = svg.append("g");
+
+  let zoom = d3
+    .zoom()
+    .scaleExtent([0.1, 15]) // Set the scale extent
+    .on("zoom", handleZoom);
+
+  function handleZoom(e) {
+    nodes.attr("transform", e.transform);
+    links.attr("transform", e.transform);
+  }
+
+  svg.call(zoom);
 
   const minDomain = d3.min(data.nodes, function (d) {
     return d.value;
@@ -32,8 +52,8 @@ const createDiagram = (svgId, data) => {
     return d.value;
   });
 
-  const minRadius = 4;
-  const maxRadius = 10;
+  const minRadius = 25;
+  const maxRadius = 50;
 
   const sizeScale = d3
     .scaleLinear()
@@ -43,14 +63,16 @@ const createDiagram = (svgId, data) => {
   // Create and configure the simulation
   let simulation = d3
     .forceSimulation(data.nodes)
-    .force("charge", d3.forceManyBody().strength(-15))
+    .force(
+      "charge",
+      d3.forceManyBody().strength((d) => -1000)
+    )
     .force("center", d3.forceCenter(width / 2, height / 2))
     .force("link", d3.forceLink().links(data.links))
     .on("tick", ticked);
 
   function updateLinks() {
-    svg
-      .select(".links")
+    links
       .selectAll("line")
       .data(data.links)
       .join("line")
@@ -67,12 +89,12 @@ const createDiagram = (svgId, data) => {
         return d.target.y;
       })
       .attr("stroke", strokeColor)
-      .on("click", handleLinkClick);
+      .on("click", handleLinkClick)
+      .attr("stroke-width", 4);
   }
 
   function updateNodes() {
-    svg
-      .select(".nodes")
+    nodes
       .selectAll("circle")
       .data(data.nodes)
       .join("circle")
@@ -208,9 +230,8 @@ function linkTooltip(node1, node2, value, svgId) {
 
 // Function to be called on resize:
 function resizeVisualization() {
-  const containerWidth = document.querySelector(
-    ".visualization-container"
-  ).offsetWidth;
+  const containerWidth =
+    document.querySelector(".visualization-svg").offsetWidth;
   const newWidth = containerWidth;
   const newHeight = newWidth / 3; // Maintain aspect ratio
 
