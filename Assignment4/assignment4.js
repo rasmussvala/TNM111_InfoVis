@@ -1,10 +1,17 @@
 const strokeColor = "#E0E0E0";
 
-var { data1, data2 } = await loadData();
+async function main() {
+  var { data1, data2 } = await loadData();
 
-handleRangeInputs();
+  createDiagram("diagram1", data1);
+  createDiagram("diagram2", data2);
 
-const createDiagram = (svgId, data) => {
+  handleRangeInputs();
+}
+
+main();
+
+function createDiagram(svgId, data) {
   // Define SVG and its dimensions
   const svg = d3.select(`#${svgId}`);
 
@@ -174,7 +181,7 @@ const createDiagram = (svgId, data) => {
       );
     }
   }
-};
+}
 
 function handleRangeInputs() {
   var lowerSlider = document.querySelector("#lower");
@@ -261,6 +268,3 @@ function linkTooltip(node1, node2, value, svgId) {
     }
   }
 }
-
-createDiagram("diagram1", data1);
-createDiagram("diagram2", data2);
