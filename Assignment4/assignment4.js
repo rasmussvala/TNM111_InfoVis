@@ -221,12 +221,24 @@ function handleRangeInputs() {
 
 async function loadData() {
   try {
-    const data1 = await d3.json(
-      "./starwars-interactions/starwars-full-interactions-allCharacters.json"
-    );
-    const data2 = await d3.json(
-      "./starwars-interactions/starwars-episode-2-interactions-allCharacters.json"
-    );
+    const fileNames = [
+      "./starwars-interactions/starwars-full-interactions-allCharacters.json",
+      "./starwars-interactions/starwars-episode-2-interactions-allCharacters.json",
+    ];
+    const data1 = await d3.json(fileNames[0]);
+    const data2 = await d3.json(fileNames[1]);
+
+    var titleNames = document.querySelectorAll(".grid-item h2");
+
+    for (let i = 0; i < titleNames.length; i++) {
+      const filename = fileNames[i];
+      const episodeMatch = filename.match(/episode-(\d+)/);
+
+      titleNames[i].textContent = episodeMatch
+        ? "Episode " + episodeMatch[1]
+        : "All Episodes";
+    }
+
     return { data1, data2 };
   } catch (error) {
     throw new Error("Error loading data:", error);
