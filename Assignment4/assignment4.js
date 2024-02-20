@@ -236,8 +236,8 @@ function nodeTooltip(node, svgId) {
   if (tooltip) {
     if (node && node.data()[0]) {
       let data = node.data()[0];
-      tooltip.select(".name").text("Name:" + data.name);
-      tooltip.select(".value").text("Value:" + data.value);
+      tooltip.select(".name").text("Name: " + data.name);
+      tooltip.select(".value").text("Number of conversations: " + data.value);
     } else {
       tooltip.select(".name").text("");
       tooltip.select(".value").text("");

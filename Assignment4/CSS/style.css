@@ -1,14 +1,39 @@
-.graph {
-  border: 1px solid lightgray;
-  width: 100%;
+.grid-container {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-gap: 10px;
 }
 
-.visualization-container {
-  display: flex;
+.grid-item {
+  border: 1px solid #ccc;
+  text-align: left;
+  border-radius: 10px;
+  position: relative;
+}
+
+.grid-item h2 {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 2;
+}
+
+.grid-item .graph {
+  z-index: 1;
+  border-radius: 10px;
+}
+
+h2 {
+  margin-left: 20px;
+}
+
+p {
+  margin-left: 10px;
 }
 
 body {
   padding: 4em;
+  font-family: "Roboto", sans-serif;
 }
 
 input[type="range"] {
