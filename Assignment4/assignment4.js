@@ -56,12 +56,14 @@ function createDiagram(svgId, data) {
   // Create and configure the simulation
   let simulation = d3
     .forceSimulation(data.nodes)
-    .force(
-      "charge",
-      d3.forceManyBody().strength((d) => -1000)
-    )
+    .force("charge", d3.forceManyBody().strength(-1500))
     .force("center", d3.forceCenter(width / 2, height / 2))
-    .force("link", d3.forceLink().links(data.links))
+    .force("link", d3.forceLink().links(data.links).distance(100))
+    .force(
+      "collide",
+      d3.forceCollide().radius((d) => d.radius + 5)
+    )
+    .alphaDecay(0.02)
     .on("tick", ticked);
 
   function updateLinks() {
@@ -220,7 +222,7 @@ function handleRangeInputs() {
 async function loadData() {
   try {
     const data1 = await d3.json(
-      "./starwars-interactions/starwars-episode-4-interactions-allCharacters.json"
+      "./starwars-interactions/starwars-full-interactions-allCharacters.json"
     );
     const data2 = await d3.json(
       "./starwars-interactions/starwars-episode-2-interactions-allCharacters.json"
@@ -239,8 +241,8 @@ function nodeTooltip(node, svgId) {
       tooltip.select(".name").text("Name: " + data.name);
       tooltip.select(".value").text("Number of conversations: " + data.value);
     } else {
-      tooltip.select(".name").text("");
-      tooltip.select(".value").text("");
+      tooltip.select(".name").text("Name: ");
+      tooltip.select(".value").text("Number of conversations: ");
     }
   }
 }
@@ -251,8 +253,8 @@ function linkTooltip(node1, node2, value, svgId) {
     if (node1.data()[0] && node2.data()[0]) {
       tooltip
         .select(".name")
-        .text("Names:" + node1.data()[0].name + " & " + node2.data()[0].name);
-      tooltip.select(".value").text("Value:" + value);
+        .text("Names: " + node1.data()[0].name + " & " + node2.data()[0].name);
+      tooltip.select(".value").text("Number of conversations: " + value);
     } else if (node1.data()[0] || node2.data()[0]) {
       const nodeName = node1.data()[0]
         ? node1.data()[0].name
@@ -261,10 +263,10 @@ function linkTooltip(node1, node2, value, svgId) {
         ? node1.data()[0].value
         : node2.data()[0].value;
       tooltip.select(".name").text("Name: " + nodeName);
-      tooltip.select(".value").text("Value: " + nodeValue);
+      tooltip.select(".value").text("Number of conversations: " + nodeValue);
     } else {
-      tooltip.select(".name").text("");
-      tooltip.select(".value").text("");
+      tooltip.select(".name").text("Name: ");
+      tooltip.select(".value").text("Number of conversations: ");
     }
   }
 }
