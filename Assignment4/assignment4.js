@@ -1,52 +1,8 @@
 const strokeColor = "#E0E0E0";
 
-var data = await d3
-  .json(
-    "./starwars-interactions/starwars-episode-4-interactions-allCharacters.json"
-  )
-  .catch(function (error) {
-    console.error("Error loading data:", error);
-  });
+var { data1, data2 } = await loadData();
 
-var data2 = await d3
-  .json(
-    "./starwars-interactions/starwars-episode-2-interactions-allCharacters.json"
-  )
-  .catch(function (error) {
-    console.error("Error loading data:", error);
-  });
-
-var lowerSlider = document.querySelector("#lower");
-var upperSlider = document.querySelector("#upper");
-
-var lowerVal = parseInt(lowerSlider.value);
-var upperVal = parseInt(upperSlider.value);
-
-upperSlider.oninput = function () {
-  lowerVal = parseInt(lowerSlider.value);
-  upperVal = parseInt(upperSlider.value);
-
-  if (upperVal < lowerVal + 4) {
-    lowerSlider.value = upperVal - 4;
-
-    if (lowerVal == lowerSlider.min) {
-      upperSlider.value = 4;
-    }
-  }
-};
-
-lowerSlider.oninput = function () {
-  lowerVal = parseInt(lowerSlider.value);
-  upperVal = parseInt(upperSlider.value);
-
-  if (lowerVal > upperVal - 4) {
-    upperSlider.value = lowerVal + 4;
-
-    if (upperVal == upperSlider.max) {
-      lowerSlider.value = parseInt(upperSlider.max) - 4;
-    }
-  }
-};
+handleRangeInputs();
 
 const createDiagram = (svgId, data) => {
   // Define SVG and its dimensions
@@ -220,6 +176,54 @@ const createDiagram = (svgId, data) => {
   }
 };
 
+function handleRangeInputs() {
+  var lowerSlider = document.querySelector("#lower");
+  var upperSlider = document.querySelector("#upper");
+
+  var lowerVal = parseInt(lowerSlider.value);
+  var upperVal = parseInt(upperSlider.value);
+
+  upperSlider.oninput = function () {
+    lowerVal = parseInt(lowerSlider.value);
+    upperVal = parseInt(upperSlider.value);
+
+    if (upperVal < lowerVal + 4) {
+      lowerSlider.value = upperVal - 4;
+
+      if (lowerVal == lowerSlider.min) {
+        upperSlider.value = 4;
+      }
+    }
+  };
+
+  lowerSlider.oninput = function () {
+    lowerVal = parseInt(lowerSlider.value);
+    upperVal = parseInt(upperSlider.value);
+
+    if (lowerVal > upperVal - 4) {
+      upperSlider.value = lowerVal + 4;
+
+      if (upperVal == upperSlider.max) {
+        lowerSlider.value = parseInt(upperSlider.max) - 4;
+      }
+    }
+  };
+}
+
+async function loadData() {
+  try {
+    const data1 = await d3.json(
+      "./starwars-interactions/starwars-episode-4-interactions-allCharacters.json"
+    );
+    const data2 = await d3.json(
+      "./starwars-interactions/starwars-episode-2-interactions-allCharacters.json"
+    );
+    return { data1, data2 };
+  } catch (error) {
+    throw new Error("Error loading data:", error);
+  }
+}
+
 function nodeTooltip(node, svgId) {
   var tooltip = d3.select(`#tooltip-${svgId}`);
   if (tooltip) {
@@ -258,5 +262,5 @@ function linkTooltip(node1, node2, value, svgId) {
   }
 }
 
-createDiagram("diagram1", data);
+createDiagram("diagram1", data1);
 createDiagram("diagram2", data2);
