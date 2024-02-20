@@ -3,41 +3,27 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
+    <title>Star Wars Conversations</title>
     <script src="./lib/d3/d3.v7.min.js"></script>
-    <style>
-      svg {
-        border: 1px solid lightgray;
-        width: 100%;
-      }
-
-      .visualization-container {
-        display: flex;
-      }
-    </style>
+    <link rel="stylesheet" href="./CSS/style.css" />
   </head>
 
   <body>
     <div class="visualization-container">
-      <svg viewBox="0 0 1920 1080" id="diagram1"></svg>
-      <svg viewBox="0 0 1920 1080" id="diagram2"></svg>
+      <svg class="graph" viewBox="0 0 1920 1080" id="diagram1"></svg>
+      <svg class="graph" viewBox="0 0 1920 1080" id="diagram2"></svg>
     </div>
+
     <div class="control-panel">
       <h3>Control Panel</h3>
       <div class="edge-filter">
-        <label for="edge-weight-range">Edge Weight Range:</label>
-        <!--Min and max values will be updated correctly in js file -->
-        <input
-          type="range"
-          id="edge-weight-range"
-          min="0"
-          max="10"
-          step="0.1"
-        />
-        <span id="edge-weight-min">0</span> -
-        <span id="edge-weight-max">10</span>
+        <span class="multi-range">
+          <input type="range" min="0" max="50" value="5" id="lower" />
+          <input type="range" min="0" max="50" value="45" id="upper" />
+        </span>
       </div>
     </div>
+
     <div id="tooltip-diagram1">
       <br />
       <h5><strong>Character Info</strong></h5>
@@ -45,6 +31,7 @@
       <p><span class="name">Name</span></p>
       <p><span class="value">Value</span></p>
     </div>
+
     <div id="tooltip-diagram2">
       <br />
       <h5><strong>Character Info</strong></h5>

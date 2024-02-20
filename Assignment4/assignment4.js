@@ -16,31 +16,37 @@ var data2 = await d3
     console.error("Error loading data:", error);
   });
 
-function updateRangeSlider() {
-  // Calculate the maximum value
-  function findMaxEdgeValue() {
-    const combinedLinks = data.links.concat(data2.links);
-    let maxValue = -Infinity;
+var lowerSlider = document.querySelector("#lower");
+var upperSlider = document.querySelector("#upper");
 
-    for (const link of combinedLinks) {
-      maxValue = Math.max(maxValue, link.value);
+var lowerVal = parseInt(lowerSlider.value);
+var upperVal = parseInt(upperSlider.value);
+
+upperSlider.oninput = function () {
+  lowerVal = parseInt(lowerSlider.value);
+  upperVal = parseInt(upperSlider.value);
+
+  if (upperVal < lowerVal + 4) {
+    lowerSlider.value = upperVal - 4;
+
+    if (lowerVal == lowerSlider.min) {
+      upperSlider.value = 4;
     }
-
-    return maxValue;
   }
+};
 
-  // Get references to the HTML elements
-  const edgeWeightMaxInput = document.getElementById("edge-weight-range");
-  const edgeWeightMaxSpan = document.getElementById("edge-weight-max");
+lowerSlider.oninput = function () {
+  lowerVal = parseInt(lowerSlider.value);
+  upperVal = parseInt(upperSlider.value);
 
-  // Update the HTML with the calculated value
-  const maxInteractionValue = findMaxEdgeValue();
-  edgeWeightMaxInput.max = maxInteractionValue;
-  edgeWeightMaxSpan.textContent = maxInteractionValue;
-}
+  if (lowerVal > upperVal - 4) {
+    upperSlider.value = lowerVal + 4;
 
-// Call the function to execute the logic
-updateRangeSlider();
+    if (upperVal == upperSlider.max) {
+      lowerSlider.value = parseInt(upperSlider.max) - 4;
+    }
+  }
+};
 
 const createDiagram = (svgId, data) => {
   // Define SVG and its dimensions
@@ -251,27 +257,6 @@ function linkTooltip(node1, node2, value, svgId) {
     }
   }
 }
-
-// Function to be called on resize:
-function resizeVisualization() {
-  const containerWidth =
-    document.querySelector(".visualization-svg").offsetWidth;
-  const newWidth = containerWidth;
-  const newHeight = newWidth / 3; // Maintain aspect ratio
-
-  d3.select("#diagram1").attr("width", newWidth).attr("height", newHeight);
-
-  d3.select("#diagram2").attr("width", newWidth).attr("height", newHeight);
-}
-
-// Listen for resize events
-window.addEventListener("resize", resizeVisualization);
-
-function filterByEdgeWeight() {}
-
-function applyFilters() {}
-
-function updateDiagram() {}
 
 createDiagram("diagram1", data);
 createDiagram("diagram2", data2);

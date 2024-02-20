@@ -1,0 +1,66 @@
+.graph {
+  border: 1px solid lightgray;
+  width: 100%;
+}
+
+.visualization-container {
+  display: flex;
+}
+
+body {
+  padding: 4em;
+}
+
+input[type="range"] {
+  box-sizing: border-box;
+  appearance: none;
+  width: 400px;
+  margin: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: 1px;
+  outline: none;
+  background: linear-gradient(grey, grey) no-repeat center;
+  /* Use a linear gradient to generate only the 2px height background */
+  background-size: 100% 2px;
+  pointer-events: none;
+
+  &:active,
+  &:focus {
+    outline: none;
+  }
+
+  &::-webkit-slider-thumb {
+    height: 28px;
+    width: 28px;
+    border-radius: 28px;
+    background-color: #f00;
+    position: relative;
+    cursor: pointer;
+    appearance: none;
+    pointer-events: all;
+  }
+}
+
+.multi-range {
+  position: relative;
+  height: 50px;
+
+  input[type="range"] {
+    position: absolute;
+
+    &:nth-child(1) {
+      &::-webkit-slider-thumb::before {
+        background-color: red;
+      }
+    }
+
+    &:nth-child(2) {
+      background: none;
+
+      &::-webkit-slider-thumb::before {
+        background-color: grey;
+      }
+    }
+  }
+}
