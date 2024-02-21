@@ -44,12 +44,37 @@
     </div>
 
     <div class="control-panel">
-      <h3>Control Panel</h3>
-      <div class="edge-filter">
-        <span class="multi-range">
-          <input type="range" min="0" max="50" value="5" id="lower" />
-          <input type="range" min="0" max="50" value="45" id="upper" />
-        </span>
+      <h2>Filters</h2>
+      <div class="range_container">
+        <h3>Number of Conversations</h3>
+        <div class="sliders_control">
+          <input id="fromSlider" type="range" value="10" min="0" max="100" />
+          <input id="toSlider" type="range" value="40" min="0" max="100" />
+        </div>
+        <div class="form_control">
+          <div class="form_control_container">
+            <div class="form_control_container__time">Min</div>
+            <input
+              class="form_control_container__time__input"
+              type="number"
+              id="fromInput"
+              value="10"
+              min="0"
+              max="100"
+            />
+          </div>
+          <div class="form_control_container">
+            <div class="form_control_container__time">Max</div>
+            <input
+              class="form_control_container__time__input"
+              type="number"
+              id="toInput"
+              value="40"
+              min="0"
+              max="100"
+            />
+          </div>
+        </div>
       </div>
 
       <!-- <div class="episode-selector">
