@@ -1,4 +1,5 @@
 const data_files = [
+  "./starwars-interactions/starwars-full-interactions-allCharacters.json",
   "./starwars-interactions/starwars-episode-1-interactions-allCharacters.json",
   "./starwars-interactions/starwars-episode-2-interactions-allCharacters.json",
   "./starwars-interactions/starwars-episode-3-interactions-allCharacters.json",
@@ -8,17 +9,99 @@ const data_files = [
   "./starwars-interactions/starwars-episode-7-interactions-allCharacters.json",
 ];
 
-let episodes = [];
+const full = await d3.json(
+  "./starwars-interactions/starwars-full-interactions-allCharacters.json"
+);
 
-for (const url of data_files) {
-  try {
-    const data = await d3.json(url);
-    episodes.push(data);
-  } catch (error) {
-    console.error("Error loading data:", error);
+let episodes = [];
+const selectedEpisodes = {
+  diagram1: [],
+  diagram2: [],
+};
+
+async function loadEpisodes() {
+  for (const url of data_files) {
+    try {
+      const data = await d3.json(url);
+      episodes.push(data);
+    } catch (error) {
+      console.error("Error loading data:", error);
+    }
   }
+  console.log(episodes);
+  //createDiagram("diagram1", episodes[0]);
+  //createDiagram("diagram2", episodes[0]);
 }
 
+export function toggleEpisode(episodeNumber, diagramId) {
+  episodeNumber += 1;
+  const diagramSelection = selectedEpisodes[diagramId];
+  const index = diagramSelection.indexOf(episodeNumber);
+  if (index !== -1) {
+    diagramSelection.splice(index, 1);
+  } else {
+    diagramSelection.push(episodeNumber);
+  }
+  let d = mergeSelectedEpisodes(diagramId);
+  console.log(d);
+  createDiagram(diagramId, d);
+}
+
+function mergeSelectedEpisodes(diagramId) {
+  let selectedData = episodes.filter((episode, index) =>
+    selectedEpisodes[diagramId].includes(index + 1)
+  );
+
+  const mergedNodesMap = new Map(); // Map to store merged nodes
+  const mergedLinksMap = new Map(); // Map to store merged links
+
+  for (const episode of selectedData) {
+    for (const node of episode.nodes) {
+      // Merge nodes based on name
+      if (mergedNodesMap.has(node.name)) {
+        mergedNodesMap.get(node.name).value += node.value;
+      } else {
+        mergedNodesMap.set(node.name, { ...node });
+      }
+    }
+    for (const link_ref of episode.links) {
+      // Create a unique key for the link, regardless of direction
+      let link = {
+        source: episode.nodes[link_ref.source].name,
+        target: episode.nodes[link_ref.target].name,
+        value: link_ref.value,
+      };
+      const linkKey = `${link.source}-${link.target}`;
+      const reverseLinkKey = `${link.target}-${link.source}`;
+      if (mergedLinksMap.has(linkKey) || mergedLinksMap.has(reverseLinkKey)) {
+        const existingLink =
+          mergedLinksMap.get(linkKey) || mergedLinksMap.get(reverseLinkKey);
+        existingLink.value += link.value;
+      } else {
+        mergedLinksMap.set(linkKey, { ...link });
+      }
+    }
+  }
+
+  // Convert maps to arrays
+  const mergedNodes = Array.from(mergedNodesMap.values());
+  const mergedLinks = Array.from(mergedLinksMap.values());
+
+  //Update link indices based on merged nodes
+  const mappedLinks = [];
+  for (const l of mergedLinks) {
+    mappedLinks.push({
+      source: mergedNodes.findIndex((node) => node.name === l.source),
+      target: mergedNodes.findIndex((node) => node.name === l.target),
+      value: l.value,
+    });
+  }
+
+  return {
+    nodes: mergedNodes,
+    links: mappedLinks,
+  };
+}
 const strokeColor = "#E0E0E0";
 
 const createDiagram = (svgId, data) => {
@@ -29,11 +112,34 @@ const createDiagram = (svgId, data) => {
   const width = viewBox[2];
   const height = viewBox[3];
 
+  console.log(width);
+  console.log(height);
+
   // Adjust the svg's dimensions to fill the SVG
   svg.attr("width", "100%").attr("height", "100%");
 
+  // Clear existing contents of SVG
+  svg.selectAll("*").remove();
+
   const links = svg.append("g");
   const nodes = svg.append("g");
+
+  // Create and configure the simulation local to this SVG
+  const simulation = d3
+    .forceSimulation(data.nodes)
+    .force(
+      "link",
+      d3
+        .forceLink()
+        .links(data.links)
+        .distance((d) => 1000 / d.value)
+    )
+    .force(
+      "collide",
+      d3.forceCollide().radius((d) => d.value + 200)
+    )
+    .force("center", d3.forceCenter(width / 2, height / 2))
+    .on("tick", ticked);
 
   let zoom = d3
     .zoom()
@@ -55,24 +161,13 @@ const createDiagram = (svgId, data) => {
     return d.value;
   });
 
-  const minRadius = 25;
-  const maxRadius = 50;
+  const minRadius = 50;
+  const maxRadius = 100;
 
   const sizeScale = d3
     .scaleLinear()
     .domain([minDomain, maxDomain])
     .range([minRadius, maxRadius]);
-
-  // Create and configure the simulation
-  let simulation = d3
-    .forceSimulation(data.nodes)
-    .force(
-      "charge",
-      d3.forceManyBody().strength((d) => -1000)
-    )
-    .force("center", d3.forceCenter(width / 2, height / 2))
-    .force("link", d3.forceLink().links(data.links))
-    .on("tick", ticked);
 
   function updateLinks() {
     links
@@ -234,8 +329,7 @@ function linkTooltip(node1, node2, value, svgId) {
 
 // Function to be called on resize:
 function resizeVisualization() {
-  const containerWidth =
-    document.querySelector(".visualization-svg").offsetWidth;
+  const containerWidth = document.querySelector("svg").offsetWidth;
   const newWidth = containerWidth;
   const newHeight = newWidth / 3; // Maintain aspect ratio
 
@@ -247,5 +341,8 @@ function resizeVisualization() {
 // Listen for resize events
 window.addEventListener("resize", resizeVisualization);
 
-createDiagram("diagram1", episodes[0]);
-createDiagram("diagram2", episodes[1]);
+loadEpisodes();
+//createDiagram("diagram1", episodes[0]);
+createDiagram("diagram2", full);
+//toggleEpisode(3, "diagram2");
+//toggleEpisode(0, "diagram2");

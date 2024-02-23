@@ -7,10 +7,7 @@
     <title>Document</title>
     <script src="./lib/d3/d3.v7.min.js"></script>
     <style>
-      body {
-        background-color: black;
-        color: yellow;
-      }
+      body {}
 
       svg {
         border: 1px solid lightgray;
@@ -30,7 +27,48 @@
       <svg viewBox="0 0 1920 1080" id="diagram2">
       </svg>
     </div>
-    <div id="control-panel">control-panel</div>
+    <script type="module" src="assignment4.js">
+    </script>
+    <div id="control-panel">control-panel
+      <div>
+        <input type="checkbox" id="full" onchange="toggleEpisode(0, 'diagram1')">
+        <label for="full">full</label>
+        <input type="checkbox" id="episode1" onchange="toggleEpisode(1, 'diagram1')">
+        <label for="episode1">Episode 1</label>
+        <input type="checkbox" id="episode2" onchange="toggleEpisode(2, 'diagram1')">
+        <label for="episode2">Episode 2</label>
+        <input type="checkbox" id="episode3" onchange="toggleEpisode(3, 'diagram1')">
+        <label for="episode3">Episode 3</label>
+        <input type="checkbox" id="episode4" onchange="toggleEpisode(4, 'diagram1')">
+        <label for="episode4">Episode 4</label>
+        <input type="checkbox" id="episode5" onchange="toggleEpisode(5, 'diagram1')">
+        <label for="episode5">Episode 5</label>
+        <input type="checkbox" id="episode6" onchange="toggleEpisode(6, 'diagram1')">
+        <label for="episode6">Episode 6</label>
+        <input type="checkbox" id="episode7" onchange="toggleEpisode(7, 'diagram1')">
+        <label for="episode7">Episode 7</label>
+      </div>
+
+      <div>
+        <input type="checkbox" id="full" onchange="toggleEpisode(0, 'diagram2')">
+        <label for="full">full</label>
+        <input type="checkbox" id="episode1" onchange="toggleEpisode(1, 'diagram2')">
+        <label for="episode1">Episode 1</label>
+        <input type="checkbox" id="episode2" onchange="toggleEpisode(2, 'diagram2')">
+        <label for="episode2">Episode 2</label>
+        <input type="checkbox" id="episode3" onchange="toggleEpisode(3, 'diagram2')">
+        <label for="episode3">Episode 3</label>
+        <input type="checkbox" id="episode4" onchange="toggleEpisode(4, 'diagram2')">
+        <label for="episode4">Episode 4</label>
+        <input type="checkbox" id="episode5" onchange="toggleEpisode(5, 'diagram2')">
+        <label for="episode5">Episode 5</label>
+        <input type="checkbox" id="episode6" onchange="toggleEpisode(6, 'diagram2')">
+        <label for="episode6">Episode 6</label>
+        <input type="checkbox" id="episode7" onchange="toggleEpisode(7, 'diagram2')">
+        <label for="episode7">Episode 7</label>
+      </div>
+
+    </div>
     <div id="tooltip-diagram1">
       <br>
       <h5><strong>Character Info</strong></h5>
@@ -47,7 +85,11 @@
     </div>
 
 
-    <script src="assignment4.js" type="module"></script>
+    <script type="module">
+      import { toggleEpisode } from "./assignment4.js";
+      window.toggleEpisode = toggleEpisode;
+    </script>
+
   </body>
 
 </html>
