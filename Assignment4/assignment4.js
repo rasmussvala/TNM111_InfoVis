@@ -110,7 +110,7 @@ function createDiagram(svgId, data) {
     d3.selectAll("circle")
       .attr("fill", (d) => d.colour)
       .classed("selected", false);
-    d3.selectAll("line").attr("fill", strokeColor).classed("selected", false);
+    d3.selectAll("line").attr("stroke", strokeColor).classed("selected", false);
   };
 
   function handleNodeClick() {
@@ -145,7 +145,6 @@ function createDiagram(svgId, data) {
 
     if (link.classed("selected")) {
       resetAllNodes();
-      console.log("Was selected");
       nodeTooltip(null, svgId);
       nodeTooltip(null, otherSvgId);
     } else {
@@ -169,10 +168,12 @@ function createDiagram(svgId, data) {
       const matchingLink = otherSvg
         .selectAll("line")
         .filter(
-          (d) => d.source.name === target.name && d.target.name === source.name
+          (d) =>
+            (d.source.name === source.name && d.target.name === target.name) ||
+            (d.source.name === target.name && d.target.name === source.name)
         );
-      link.classed("selected", true);
-      matchingLink.classed("selected", true);
+      link.classed("selected", true).attr("stroke", "#ff0000");
+      matchingLink.classed("selected", true).attr("stroke", "#ff0000");
 
       linkTooltip(node1Element, node2Element, linkData.value, svgId);
       linkTooltip(
