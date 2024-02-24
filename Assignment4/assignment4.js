@@ -4,9 +4,10 @@ const imgPath = "./public/images/";
 async function main() {
   const { data1, data2 } = await loadData();
   const imageDict = await loadImages();
-  console.log(imageDict);
+
   createDiagrams("diagram1", data1, imageDict);
   createDiagrams("diagram2", data2, imageDict);
+
   handleRangeInputs();
 }
 
