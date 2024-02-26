@@ -115,7 +115,7 @@ function createDiagrams(svgId, data, imageDict) {
 
   function selectNodeFill(data, imageDictionary) {
     if (!data) return "#00ff00";
-    const name = data.name.toLowerCase().replace(/[\s-]/g, "");
+    const name = data.name.toLowerCase().replace(/[\s\/-]/g, "");
     const imageUrl = imageDictionary[name];
     if (imageUrl) {
       const clipId = `clip-${name}`;
