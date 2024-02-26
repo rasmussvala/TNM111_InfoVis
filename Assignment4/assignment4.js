@@ -112,18 +112,9 @@ function createDiagrams(svgId, data, imageDict) {
   }
 
   function selectNodeFill(data, imageDictionary) {
-    if (!data) return "#00ff00";
     const name = data.name.toLowerCase().replace(/[\s\/-]/g, "");
     const imageUrl = imageDictionary[name];
     if (imageUrl) {
-      const clipId = `clip-${name}`;
-      const clipPath = svg
-        .append("clipPath")
-        .attr("id", clipId)
-        .append("circle")
-        .attr("cx", 0)
-        .attr("cy", 0)
-        .attr("r", sizeScale(data.value));
       const pattern = svg
         .append("pattern")
         .attr("id", `pattern-${name}`)
@@ -390,13 +381,10 @@ function setToggleAccessible(currentTarget) {
 }
 
 function updateDiagram(minSlider, maxSlider) {
-  console.log(d3.selectAll("circle"));
   d3.selectAll("circle").style("display", (d) => {
-    try {
-      if (d.value < minSlider || d.value > maxSlider) {
-        return "none";
-      }
-    } catch (error) {}
+    if (d.value < minSlider || d.value > maxSlider) {
+      return "none";
+    }
   });
 
   d3.selectAll("line").style("display", (d) => {
