@@ -226,7 +226,7 @@ function createDiagrams(svgId, data, imageDict) {
       linkTooltip(
         matchingNode1,
         matchingNode2,
-        matchingLink.data()[0] ? matchingLink.data()[0].value : -1,
+        matchingLink.data()[0] ? matchingLink.data()[0].value : 0,
         otherSvgId
       );
     }
@@ -272,10 +272,10 @@ function nodeTooltip(node, svgId) {
     if (node && node.data()[0]) {
       let data = node.data()[0];
       tooltip.select(".name").text("Name: " + data.name);
-      tooltip.select(".value").text("Number of conversations: " + data.value);
+      tooltip.select(".value").text("Number of appearances: " + data.value);
     } else {
       tooltip.select(".name").text("Name: ");
-      tooltip.select(".value").text("Number of conversations: ");
+      tooltip.select(".value").text("Number of appearances: ");
     }
   }
 }
@@ -287,7 +287,7 @@ function linkTooltip(node1, node2, value, svgId) {
       tooltip
         .select(".name")
         .text("Names: " + node1.data()[0].name + " & " + node2.data()[0].name);
-      tooltip.select(".value").text("Number of conversations: " + value);
+      tooltip.select(".value").text("Number of common appearances: " + value);
     } else if (node1.data()[0] || node2.data()[0]) {
       const nodeName = node1.data()[0]
         ? node1.data()[0].name
@@ -296,10 +296,12 @@ function linkTooltip(node1, node2, value, svgId) {
         ? node1.data()[0].value
         : node2.data()[0].value;
       tooltip.select(".name").text("Name: " + nodeName);
-      tooltip.select(".value").text("Number of conversations: " + nodeValue);
+      tooltip
+        .select(".value")
+        .text("Number of common appearances: " + nodeValue);
     } else {
       tooltip.select(".name").text("Name: ");
-      tooltip.select(".value").text("Number of conversations: ");
+      tooltip.select(".value").text("Number of common appearances: ");
     }
   }
 }
