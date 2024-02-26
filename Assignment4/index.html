@@ -1,15 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Star Wars Appearances</title>
     <script src="./lib/d3/d3.v7.min.js"></script>
     <link rel="stylesheet" href="./CSS/style.css" />
-    <link
-      href="https://fonts.googleapis.com/css?family=Roboto"
-      rel="stylesheet"
-    />
+    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet" />
   </head>
 
   <body>
@@ -17,13 +15,19 @@
 
     <div class="grid-container">
       <div class="grid-item">
-        <h2>Episode X</h2>
         <svg class="graph" viewBox="0 0 1920 1080" id="diagram1"></svg>
       </div>
 
       <div class="grid-item">
-        <h2>Episode X</h2>
         <svg class="graph" viewBox="0 0 1920 1080" id="diagram2"></svg>
+      </div>
+
+      <div class="episodes" id="episodes1">
+        Episodes:
+      </div>
+
+      <div class="episodes" id="episodes2">
+        Episodes:
       </div>
 
       <div class="grid-item">
@@ -44,7 +48,6 @@
     </div>
 
     <div class="control-panel">
-      <h2>Filters</h2>
       <div class="range_container">
         <h3>Character's Appearances</h3>
         <div class="sliders_control">
@@ -54,30 +57,53 @@
         <div class="form_control">
           <div class="form_control_container">
             <div class="form_control_container__time">Min</div>
-            <input
-              class="form_control_container__time__input"
-              type="number"
-              id="fromInput"
-              value="0"
-              min="0"
-              max="200"
-            />
+            <input class="form_control_container__time__input" type="number" id="fromInput" value="0" min="0"
+              max="200" />
           </div>
           <div class="form_control_container">
             <div class="form_control_container__time">Max</div>
-            <input
-              class="form_control_container__time__input"
-              type="number"
-              id="toInput"
-              value="200"
-              min="0"
-              max="200"
-            />
+            <input class="form_control_container__time__input" type="number" id="toInput" value="200" min="0"
+              max="200" />
           </div>
         </div>
       </div>
     </div>
 
-    <script src="assignment4.js" type="module"></script>
+    <script type="module">
+      import { toggleEpisode } from "./assignment4.js";
+      window.toggleEpisode = toggleEpisode;
+
+      const episodes1 = document.getElementById('episodes1');
+      const episodes2 = document.getElementById('episodes2');
+
+      // Function to generate checkboxes
+      function generateCheckboxes(container, diagramId) {
+        for (let i = 1; i <= 7; i++) {
+          const span = document.createElement('span');
+          const input = document.createElement('input');
+          input.type = 'checkbox';
+          input.checked = true;
+          input.dataset.episode = i;
+          input.dataset.diagram = diagramId;
+          input.onchange = function () {
+            toggleEpisode(i, diagramId, this.checked);
+          };
+          const label = document.createElement('label');
+          label.textContent = i;
+
+          span.appendChild(input);
+          span.appendChild(label);
+
+          container.appendChild(span);
+        }
+      }
+
+      // Generate checkboxes for diagram1
+      generateCheckboxes(episodes1, 'diagram1');
+
+      // Generate checkboxes for diagram2
+      generateCheckboxes(episodes2, 'diagram2');
+    </script>
   </body>
+
 </html>

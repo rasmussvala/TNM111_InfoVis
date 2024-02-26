@@ -1,15 +1,104 @@
+const data_files = [
+  "./starwars-interactions/starwars-episode-1-interactions-allCharacters.json",
+  "./starwars-interactions/starwars-episode-2-interactions-allCharacters.json",
+  "./starwars-interactions/starwars-episode-3-interactions-allCharacters.json",
+  "./starwars-interactions/starwars-episode-4-interactions-allCharacters.json",
+  "./starwars-interactions/starwars-episode-5-interactions-allCharacters.json",
+  "./starwars-interactions/starwars-episode-6-interactions-allCharacters.json",
+  "./starwars-interactions/starwars-episode-7-interactions-allCharacters.json",
+];
+
 const strokeColor = "#E0E0E0";
 const imgPath = "./public/images/";
+var imageDict = await loadImages();
 
-async function main() {
-  const { data1, data2 } = await loadData();
-  const imageDict = await loadImages();
+let episodes = [];
+const selectedEpisodes = {
+  diagram1: [1, 2, 3, 4, 5, 6],
+  diagram2: [1, 2, 3, 4, 5, 6],
+};
 
-  createDiagrams("diagram1", data1, imageDict);
-  createDiagrams("diagram2", data2, imageDict);
+await loadEpisodes();
+toggleEpisode(7, "diagram1", true);
+toggleEpisode(7, "diagram2", true);
+
+async function loadEpisodes() {
+  for (const url of data_files) {
+    try {
+      const data = await d3.json(url);
+      episodes.push(data);
+    } catch (error) {
+      console.error("Error loading data:", error);
+    }
+  }
 }
 
-main();
+export function toggleEpisode(episodeNumber, diagramId, isChecked) {
+  const diagramSelection = selectedEpisodes[diagramId];
+  const index = diagramSelection.indexOf(episodeNumber);
+  if (index !== -1 && !isChecked) {
+    diagramSelection.splice(index, 1);
+  } else if (isChecked) {
+    diagramSelection.push(episodeNumber);
+  }
+  let d = mergeSelectedEpisodes(diagramId);
+  createDiagram(diagramId, d);
+}
+
+function mergeSelectedEpisodes(diagramId) {
+  let selectedData = episodes.filter((episode, index) =>
+    selectedEpisodes[diagramId].includes(index + 1)
+  );
+
+  const mergedNodesMap = new Map(); // Map to store merged nodes
+  const mergedLinksMap = new Map(); // Map to store merged links
+
+  for (const episode of selectedData) {
+    for (const node of episode.nodes) {
+      // Merge nodes based on name
+      if (mergedNodesMap.has(node.name)) {
+        mergedNodesMap.get(node.name).value += node.value;
+      } else {
+        mergedNodesMap.set(node.name, { ...node });
+      }
+    }
+    for (const link_ref of episode.links) {
+      let link = {
+        source: episode.nodes[link_ref.source].name,
+        target: episode.nodes[link_ref.target].name,
+        value: link_ref.value,
+      };
+      const linkKey = `${link.source}-${link.target}`;
+      const reverseLinkKey = `${link.target}-${link.source}`;
+      if (mergedLinksMap.has(linkKey) || mergedLinksMap.has(reverseLinkKey)) {
+        const existingLink =
+          mergedLinksMap.get(linkKey) || mergedLinksMap.get(reverseLinkKey);
+        existingLink.value += link.value;
+      } else {
+        mergedLinksMap.set(linkKey, { ...link });
+      }
+    }
+  }
+
+  // Convert maps to arrays
+  const mergedNodes = Array.from(mergedNodesMap.values());
+  const mergedLinks = Array.from(mergedLinksMap.values());
+
+  //Update link indices based on merged nodes
+  const mappedLinks = [];
+  for (const l of mergedLinks) {
+    mappedLinks.push({
+      source: mergedNodes.findIndex((node) => node.name === l.source),
+      target: mergedNodes.findIndex((node) => node.name === l.target),
+      value: l.value,
+    });
+  }
+
+  return {
+    nodes: mergedNodes,
+    links: mappedLinks,
+  };
+}
 
 async function loadImages() {
   try {
@@ -27,12 +116,14 @@ async function loadImages() {
   }
 }
 
-function createDiagrams(svgId, data, imageDict) {
+function createDiagram(svgId, data) {
   const svg = d3.select(`#${svgId}`);
   const viewBox = svg.attr("viewBox").split(" ").map(parseFloat);
   const width = viewBox[2];
   const height = viewBox[3];
   svg.attr("width", "100%").attr("height", "100%");
+
+  svg.selectAll("*").remove();
 
   const links = svg.append("g");
   const nodes = svg.append("g");
@@ -93,7 +184,7 @@ function createDiagrams(svgId, data, imageDict) {
       .enter()
       .append("circle")
       .attr("r", (d) => sizeScale(d.value))
-      .attr("fill", (d) => selectNodeFill(d, imageDict))
+      .attr("fill", (d) => selectNodeFill(d))
       .attr("data-name", (d) => d.name)
       .on("click", handleNodeClick);
     nodeUpdate.exit().remove();
@@ -111,9 +202,9 @@ function createDiagrams(svgId, data, imageDict) {
     updateNodes();
   }
 
-  function selectNodeFill(data, imageDictionary) {
+  function selectNodeFill(data) {
     const name = data.name.toLowerCase().replace(/[\s\/-]/g, "");
-    const imageUrl = imageDictionary[name];
+    const imageUrl = imageDict[name];
     if (imageUrl) {
       const pattern = svg
         .append("pattern")
