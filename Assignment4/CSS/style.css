@@ -49,9 +49,25 @@ p {
   margin-left: 10px;
 }
 
+@media (max-width: 700px) {
+  body {
+    padding-left: 1em !important;
+    padding-right: 1em !important;
+  }
+
+  .grid-container {
+    grid-template-columns: auto; /* Set each grid item to full width */
+  }
+
+  .range_container {
+    width: 99% !important;
+  }
+}
+
 body {
   padding-left: 4em;
   padding-right: 4em;
+  padding-bottom: 3em;
   font-family: "Roboto", sans-serif;
   background-color: var(--background-color);
   color: var(--text-color);
@@ -62,7 +78,7 @@ body {
 .range_container {
   display: flex;
   flex-direction: column;
-  width: 40%;
+  width: 49%;
   margin-top: 10px;
 }
 
