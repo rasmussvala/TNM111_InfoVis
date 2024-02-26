@@ -1,60 +1,58 @@
 const strokeColor = "#E0E0E0";
+const imgPath = "./public/images/";
 
 async function main() {
-  var { data1, data2 } = await loadData();
+  const { data1, data2 } = await loadData();
+  const imageDict = await loadImages();
 
-  createDiagram("diagram1", data1);
-  createDiagram("diagram2", data2);
+  createDiagrams("diagram1", data1, imageDict);
+  createDiagrams("diagram2", data2, imageDict);
 
   handleRangeInputs();
 }
 
 main();
 
-function createDiagram(svgId, data) {
-  // Define SVG and its dimensions
-  const svg = d3.select(`#${svgId}`);
+async function loadImages() {
+  try {
+    const response = await fetch(`${imgPath}imageList.json`);
+    const imageList = await response.json();
+    const imageDict = {};
+    imageList.forEach((filename) => {
+      const imageUrl = `${imgPath}${filename}`;
+      imageDict[filename.split(".")[0]] = imageUrl;
+    });
+    return imageDict;
+  } catch (error) {
+    console.error("Error fetching image list:", error);
+    return {};
+  }
+}
 
+function createDiagrams(svgId, data, imageDict) {
+  const svg = d3.select(`#${svgId}`);
   const viewBox = svg.attr("viewBox").split(" ").map(parseFloat);
   const width = viewBox[2];
   const height = viewBox[3];
-
-  // Adjust the svg's dimensions to fill the SVG
   svg.attr("width", "100%").attr("height", "100%");
 
   const links = svg.append("g");
   const nodes = svg.append("g");
-
-  let zoom = d3
-    .zoom()
-    .scaleExtent([0.1, 15]) // Set the scale extent
-    .on("zoom", handleZoom);
-
-  function handleZoom(e) {
-    nodes.attr("transform", e.transform);
-    links.attr("transform", e.transform);
-  }
-
+  const zoom = d3.zoom().scaleExtent([0.1, 15]).on("zoom", handleZoom);
   svg.call(zoom);
-
-  const minDomain = d3.min(data.nodes, function (d) {
-    return d.value;
-  });
-
-  const maxDomain = d3.max(data.nodes, function (d) {
-    return d.value;
-  });
-
-  const minRadius = 25;
-  const maxRadius = 50;
 
   const sizeScale = d3
     .scaleLinear()
-    .domain([minDomain, maxDomain])
-    .range([minRadius, maxRadius]);
+    .domain([
+      d3.min(data.nodes, (d) => d.value),
+      d3.max(data.nodes, (d) => d.value),
+    ])
+    .range([25, 50]);
 
-  // Create and configure the simulation
-  let simulation = d3
+  createNodes(data);
+  createLinks(data);
+
+  const simulation = d3
     .forceSimulation(data.nodes)
     .force("charge", d3.forceManyBody().strength(-1500))
     .force("center", d3.forceCenter(width / 2, height / 2))
@@ -66,39 +64,48 @@ function createDiagram(svgId, data) {
     .alphaDecay(0.02)
     .on("tick", ticked);
 
+  function handleZoom(e) {
+    nodes.attr("transform", e.transform);
+    links.attr("transform", e.transform);
+  }
+
+  function createLinks(data) {
+    const linkUpdate = links.selectAll("line").data(data.links);
+    linkUpdate
+      .enter()
+      .append("line")
+      .attr("stroke", strokeColor)
+      .attr("stroke-width", 4)
+      .on("click", handleLinkClick);
+    linkUpdate.exit().remove();
+  }
+
   function updateLinks() {
     links
       .selectAll("line")
-      .data(data.links)
-      .join("line")
-      .attr("x1", function (d) {
-        return d.source.x;
-      })
-      .attr("y1", function (d) {
-        return d.source.y;
-      })
-      .attr("x2", function (d) {
-        return d.target.x;
-      })
-      .attr("y2", function (d) {
-        return d.target.y;
-      })
-      .attr("stroke", strokeColor)
-      .on("click", handleLinkClick)
-      .attr("stroke-width", 4);
+      .attr("x1", (d) => d.source.x)
+      .attr("y1", (d) => d.source.y)
+      .attr("x2", (d) => d.target.x)
+      .attr("y2", (d) => d.target.y);
+  }
+
+  function createNodes(data) {
+    const nodeUpdate = nodes.selectAll("circle").data(data.nodes);
+    nodeUpdate
+      .enter()
+      .append("circle")
+      .attr("r", (d) => sizeScale(d.value))
+      .attr("fill", (d) => selectNodeFill(d, imageDict))
+      .attr("data-name", (d) => d.name)
+      .on("click", handleNodeClick);
+    nodeUpdate.exit().remove();
   }
 
   function updateNodes() {
     nodes
       .selectAll("circle")
-      .data(data.nodes)
-      .join("circle")
-      .attr("r", (d) => sizeScale(d.value))
-      .attr("fill", (d) => d.colour)
       .attr("cx", (d) => d.x)
-      .attr("cy", (d) => d.y)
-      .attr("data-name", (d) => d.name)
-      .on("click", handleNodeClick);
+      .attr("cy", (d) => d.y);
   }
 
   function ticked() {
@@ -106,12 +113,41 @@ function createDiagram(svgId, data) {
     updateNodes();
   }
 
-  const resetAllNodes = () => {
-    d3.selectAll("circle")
-      .attr("fill", (d) => d.colour)
-      .classed("selected", false);
-    d3.selectAll("line").attr("stroke", strokeColor).classed("selected", false);
-  };
+  function selectNodeFill(data, imageDictionary) {
+    if (!data) return "#00ff00";
+    const name = data.name.toLowerCase().replace(/[\s-]/g, "");
+    const imageUrl = imageDictionary[name];
+    if (imageUrl) {
+      const clipId = `clip-${name}`;
+      const clipPath = svg
+        .append("clipPath")
+        .attr("id", clipId)
+        .append("circle")
+        .attr("cx", 0)
+        .attr("cy", 0)
+        .attr("r", sizeScale(data.value));
+      const pattern = svg
+        .append("pattern")
+        .attr("id", `pattern-${name}`)
+        .attr("patternContentUnits", "objectBoundingBox")
+        .attr("width", 1)
+        .attr("height", 1);
+      pattern
+        .append("image")
+        .attr("xlink:href", imageUrl)
+        .attr("width", 1)
+        .attr("height", 1)
+        .attr("preserveAspectRatio", "xMidYMid slice");
+      return `url(#pattern-${name})`;
+    } else {
+      return data.colour;
+    }
+  }
+
+  function ticked() {
+    updateLinks();
+    updateNodes();
+  }
 
   function handleNodeClick() {
     const svgId = svg.attr("id");
@@ -129,8 +165,14 @@ function createDiagram(svgId, data) {
       resetAllNodes();
       nodeTooltip(node, svgId);
       nodeTooltip(matchingCircle, otherSvgId);
-      node.attr("fill", "#ff0000").classed("selected", true);
-      matchingCircle.attr("fill", "#ff0000").classed("selected", true);
+      node
+        .style("stroke", "#ff0000")
+        .style("stroke-width", 5)
+        .classed("selected", true);
+      matchingCircle
+        .style("stroke", "#ff0000")
+        .style("stroke-width", 5)
+        .classed("selected", true);
     }
   }
 
@@ -161,7 +203,10 @@ function createDiagram(svgId, data) {
 
       [node1Element, node2Element, matchingNode1, matchingNode2].forEach(
         (node) => {
-          node.attr("fill", "#ff0000");
+          node
+            .style("stroke", "#ff0000")
+            .style("stroke-width", 5)
+            .classed("selected", true);
         }
       );
       // Find matching link in the other SVG
@@ -172,8 +217,9 @@ function createDiagram(svgId, data) {
             (d.source.name === source.name && d.target.name === target.name) ||
             (d.source.name === target.name && d.target.name === source.name)
         );
-      link.classed("selected", true).attr("stroke", "#ff0000");
-      matchingLink.classed("selected", true).attr("stroke", "#ff0000");
+      link.classed("selected", true).style("stroke", "#ff0000");
+
+      matchingLink.classed("selected", true).style("stroke", "#ff0000");
 
       linkTooltip(node1Element, node2Element, linkData.value, svgId);
       linkTooltip(
@@ -185,6 +231,13 @@ function createDiagram(svgId, data) {
     }
   }
 }
+
+const resetAllNodes = () => {
+  d3.selectAll("circle")
+    .style("stroke", "none") // Change border color to black
+    .classed("selected", false);
+  d3.selectAll("line").style("stroke", strokeColor).classed("selected", false);
+};
 
 function handleRangeInputs() {
   var lowerSlider = document.querySelector("#lower");
