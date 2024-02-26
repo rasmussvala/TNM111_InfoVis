@@ -1,0 +1,98 @@
+@media (prefers-color-scheme: dark) {
+  :root {
+    --text-color: #ccc;
+    --background-color: #0f0d14;
+  }
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --text-color: black;
+    --background-color: white;
+  }
+}
+.episodes > span {
+  padding-left: 5%;
+}
+.grid-container {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-gap: 10px;
+}
+
+.grid-item {
+  border: 1px solid #ccc;
+  text-align: left;
+  border-radius: 10px;
+  position: relative;
+}
+
+.grid-item h2 {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 2;
+  margin-left: 20px;
+}
+
+.grid-item .graph {
+  z-index: 1;
+  border-radius: 10px;
+}
+
+p {
+  margin-left: 10px;
+}
+
+body {
+  padding-left: 4em;
+  padding-right: 4em;
+  font-family: "Roboto", sans-serif;
+  background-color: var(--background-color);
+  color: var(--text-color);
+}
+
+/* ------------------ Multi-Slider CSS ------------------ */
+
+.range_container {
+  display: flex;
+  flex-direction: column;
+  width: 40%;
+  margin-top: 10px;
+}
+
+.sliders_control {
+  position: relative;
+  min-height: 15px;
+}
+
+.form_control {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  pointer-events: all;
+  width: 18px;
+  height: 18px;
+  background-color: #0075ff;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 2px;
+  width: 100%;
+  position: absolute;
+  background-color: #c6c6c6;
+  pointer-events: none;
+}
+
+#fromSlider {
+  height: 0;
+  z-index: 1;
+}

@@ -4,90 +4,109 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
+    <title>Star Wars Conversations</title>
     <script src="./lib/d3/d3.v7.min.js"></script>
-    <style>
-      body {}
-
-      svg {
-        border: 1px solid lightgray;
-        width: 100%;
-      }
-
-      .visualization-container {
-        display: flex;
-      }
-    </style>
+    <link rel="stylesheet" href="./CSS/style.css" />
+    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet" />
   </head>
 
   <body>
-    <div class="visualization-container">
-      <svg viewBox="0 0 1920 1080" id="diagram1">
-      </svg>
-      <svg viewBox="0 0 1920 1080" id="diagram2">
-      </svg>
-    </div>
-    <script type="module" src="assignment4.js">
-    </script>
-    <div id="control-panel">control-panel
-      <div>
-        <input type="checkbox" id="full" onchange="toggleEpisode(0, 'diagram1')">
-        <label for="full">full</label>
-        <input type="checkbox" id="episode1" onchange="toggleEpisode(1, 'diagram1')">
-        <label for="episode1">Episode 1</label>
-        <input type="checkbox" id="episode2" onchange="toggleEpisode(2, 'diagram1')">
-        <label for="episode2">Episode 2</label>
-        <input type="checkbox" id="episode3" onchange="toggleEpisode(3, 'diagram1')">
-        <label for="episode3">Episode 3</label>
-        <input type="checkbox" id="episode4" onchange="toggleEpisode(4, 'diagram1')">
-        <label for="episode4">Episode 4</label>
-        <input type="checkbox" id="episode5" onchange="toggleEpisode(5, 'diagram1')">
-        <label for="episode5">Episode 5</label>
-        <input type="checkbox" id="episode6" onchange="toggleEpisode(6, 'diagram1')">
-        <label for="episode6">Episode 6</label>
-        <input type="checkbox" id="episode7" onchange="toggleEpisode(7, 'diagram1')">
-        <label for="episode7">Episode 7</label>
+    <h1>Star Wars Conversations</h1>
+
+    <div class="grid-container">
+      <div class="grid-item">
+        <h2>Episode X</h2>
+        <svg class="graph" viewBox="0 0 1920 1080" id="diagram1"></svg>
       </div>
 
-      <div>
-        <input type="checkbox" id="full" onchange="toggleEpisode(0, 'diagram2')">
-        <label for="full">full</label>
-        <input type="checkbox" id="episode1" onchange="toggleEpisode(1, 'diagram2')">
-        <label for="episode1">Episode 1</label>
-        <input type="checkbox" id="episode2" onchange="toggleEpisode(2, 'diagram2')">
-        <label for="episode2">Episode 2</label>
-        <input type="checkbox" id="episode3" onchange="toggleEpisode(3, 'diagram2')">
-        <label for="episode3">Episode 3</label>
-        <input type="checkbox" id="episode4" onchange="toggleEpisode(4, 'diagram2')">
-        <label for="episode4">Episode 4</label>
-        <input type="checkbox" id="episode5" onchange="toggleEpisode(5, 'diagram2')">
-        <label for="episode5">Episode 5</label>
-        <input type="checkbox" id="episode6" onchange="toggleEpisode(6, 'diagram2')">
-        <label for="episode6">Episode 6</label>
-        <input type="checkbox" id="episode7" onchange="toggleEpisode(7, 'diagram2')">
-        <label for="episode7">Episode 7</label>
+      <div class="grid-item">
+        <h2>Episode X</h2>
+        <svg class="graph" viewBox="0 0 1920 1080" id="diagram2"></svg>
       </div>
 
-    </div>
-    <div id="tooltip-diagram1">
-      <br>
-      <h5><strong>Character Info</strong></h5>
-      <hr>
-      <p><span class="name">Name</span></p>
-      <p><span class="value">Value</span></p>
-    </div>
-    <div id="tooltip-diagram2">
-      <br>
-      <h5><strong>Character Info</strong></h5>
-      <hr>
-      <p><span class="name">Name</span></p>
-      <p><span class="value">Value</span></p>
+      <div class="episodes" id="episodes1">
+        Episodes:
+      </div>
+
+      <div class="episodes" id="episodes2">
+        Episodes:
+      </div>
+
+      <div class="grid-item">
+        <div id="tooltip-diagram1">
+          <p><strong>Character Info</strong></p>
+          <p><span class="name">Name:</span></p>
+          <p><span class="value">Number of conversations:</span></p>
+        </div>
+      </div>
+
+      <div class="grid-item">
+        <div id="tooltip-diagram2">
+          <p><strong>Character Info</strong></p>
+          <p><span class="name">Name:</span></p>
+          <p><span class="value">Number of conversations:</span></p>
+        </div>
+      </div>
     </div>
 
+    <div class="control-panel">
+      <div class="range_container">
+        <h3>Number of Conversations</h3>
+        <div class="sliders_control">
+          <input id="fromSlider" type="range" value="0" min="0" max="200" />
+          <input id="toSlider" type="range" value="200" min="0" max="200" />
+        </div>
+        <div class="form_control">
+          <div class="form_control_container">
+            <div class="form_control_container__time">Min</div>
+            <input class="form_control_container__time__input" type="number" id="fromInput" value="0" min="0"
+              max="200" />
+          </div>
+          <div class="form_control_container">
+            <div class="form_control_container__time">Max</div>
+            <input class="form_control_container__time__input" type="number" id="toInput" value="200" min="0"
+              max="200" />
+          </div>
+        </div>
+      </div>
+    </div>
 
     <script type="module">
       import { toggleEpisode } from "./assignment4.js";
       window.toggleEpisode = toggleEpisode;
+
+      document.addEventListener("DOMContentLoaded", function () {
+        const episodes1 = document.getElementById('episodes1');
+        const episodes2 = document.getElementById('episodes2');
+
+        // Function to generate checkboxes
+        function generateCheckboxes(container, diagramId) {
+          for (let i = 1; i <= 7; i++) {
+            const span = document.createElement('span');
+            const input = document.createElement('input');
+            input.type = 'checkbox';
+            input.checked = true;
+            input.dataset.episode = i;
+            input.dataset.diagram = diagramId;
+            input.onchange = function () {
+              toggleEpisode(i, diagramId, this.checked);
+            };
+            const label = document.createElement('label');
+            label.textContent = i;
+
+            span.appendChild(input);
+            span.appendChild(label);
+
+            container.appendChild(span);
+          }
+        }
+
+        // Generate checkboxes for diagram1
+        generateCheckboxes(episodes1, 'diagram1');
+
+        // Generate checkboxes for diagram2
+        generateCheckboxes(episodes2, 'diagram2');
+      });
     </script>
 
   </body>
