@@ -390,10 +390,13 @@ function setToggleAccessible(currentTarget) {
 }
 
 function updateDiagram(minSlider, maxSlider) {
+  console.log(d3.selectAll("circle"));
   d3.selectAll("circle").style("display", (d) => {
-    if (d.value < minSlider || d.value > maxSlider) {
-      return "none";
-    }
+    try {
+      if (d.value < minSlider || d.value > maxSlider) {
+        return "none";
+      }
+    } catch (error) {}
   });
 
   d3.selectAll("line").style("display", (d) => {
