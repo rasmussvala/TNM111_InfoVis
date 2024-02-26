@@ -114,6 +114,7 @@ function createDiagrams(svgId, data, imageDict) {
   }
 
   function selectNodeFill(data, imageDictionary) {
+    if (!data) return "#00ff00";
     const name = data.name.toLowerCase().replace(/[\s-]/g, "");
     const imageUrl = imageDictionary[name];
     if (imageUrl) {
@@ -142,17 +143,11 @@ function createDiagrams(svgId, data, imageDict) {
       return data.colour;
     }
   }
+
   function ticked() {
     updateLinks();
     updateNodes();
   }
-
-  const resetAllNodes = () => {
-    d3.selectAll("circle")
-      .attr("fill", (d) => selectNodeFill(d, imageDict))
-      .classed("selected", false);
-    d3.selectAll("line").attr("stroke", strokeColor).classed("selected", false);
-  };
 
   function handleNodeClick() {
     const svgId = svg.attr("id");
@@ -170,8 +165,14 @@ function createDiagrams(svgId, data, imageDict) {
       resetAllNodes();
       nodeTooltip(node, svgId);
       nodeTooltip(matchingCircle, otherSvgId);
-      node.attr("fill", "#ff0000").classed("selected", true);
-      matchingCircle.attr("fill", "#ff0000").classed("selected", true);
+      node
+        .style("stroke", "#ff0000")
+        .style("stroke-width", 5)
+        .classed("selected", true);
+      matchingCircle
+        .style("stroke", "#ff0000")
+        .style("stroke-width", 5)
+        .classed("selected", true);
     }
   }
 
@@ -202,7 +203,10 @@ function createDiagrams(svgId, data, imageDict) {
 
       [node1Element, node2Element, matchingNode1, matchingNode2].forEach(
         (node) => {
-          node.attr("fill", "#ff0000");
+          node
+            .style("stroke", "#ff0000")
+            .style("stroke-width", 5)
+            .classed("selected", true);
         }
       );
       // Find matching link in the other SVG
@@ -213,8 +217,9 @@ function createDiagrams(svgId, data, imageDict) {
             (d.source.name === source.name && d.target.name === target.name) ||
             (d.source.name === target.name && d.target.name === source.name)
         );
-      link.classed("selected", true).attr("stroke", "#ff0000");
-      matchingLink.classed("selected", true).attr("stroke", "#ff0000");
+      link.classed("selected", true).style("stroke", "#ff0000");
+
+      matchingLink.classed("selected", true).style("stroke", "#ff0000");
 
       linkTooltip(node1Element, node2Element, linkData.value, svgId);
       linkTooltip(
@@ -226,6 +231,13 @@ function createDiagrams(svgId, data, imageDict) {
     }
   }
 }
+
+const resetAllNodes = () => {
+  d3.selectAll("circle")
+    .style("stroke", "none") // Change border color to black
+    .classed("selected", false);
+  d3.selectAll("line").style("stroke", strokeColor).classed("selected", false);
+};
 
 function handleRangeInputs() {
   var lowerSlider = document.querySelector("#lower");
