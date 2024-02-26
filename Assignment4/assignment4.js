@@ -162,6 +162,18 @@ function createDiagrams(svgId, data, imageDict) {
         .style("stroke", "#ff0000")
         .style("stroke-width", 5)
         .classed("selected", true);
+
+      svg
+        .selectAll("line")
+        .filter((d) => d.source.name === name || d.target.name === name)
+        .style("stroke", "#ff0000")
+        .style("stroke-width", 5);
+
+      otherSvg
+        .selectAll("line")
+        .filter((d) => d.source.name === name || d.target.name === name)
+        .style("stroke", "#ff0000")
+        .style("stroke-width", 5);
     }
   }
 
