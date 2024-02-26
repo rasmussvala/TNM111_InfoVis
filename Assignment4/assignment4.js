@@ -253,6 +253,8 @@ const fillColor = "#0075ff";
 
 function controlFromInput(fromSlider, fromInput, toInput, controlSlider) {
   const [from, to] = getParsed(fromInput, toInput);
+  updateDiagram(from, to);
+
   fillSlider(fromInput, toInput, "#C6C6C6", fillColor, controlSlider);
   if (from > to) {
     fromSlider.value = to;
@@ -264,6 +266,8 @@ function controlFromInput(fromSlider, fromInput, toInput, controlSlider) {
 
 function controlToInput(toSlider, fromInput, toInput, controlSlider) {
   const [from, to] = getParsed(fromInput, toInput);
+  updateDiagram(from, to);
+
   fillSlider(fromInput, toInput, "#C6C6C6", fillColor, controlSlider);
   setToggleAccessible(toInput);
   if (from <= to) {
@@ -276,6 +280,8 @@ function controlToInput(toSlider, fromInput, toInput, controlSlider) {
 
 function controlFromSlider(fromSlider, toSlider, fromInput) {
   const [from, to] = getParsed(fromSlider, toSlider);
+  updateDiagram(from, to);
+
   fillSlider(fromSlider, toSlider, "#C6C6C6", fillColor, toSlider);
   if (from > to) {
     fromSlider.value = to;
@@ -287,6 +293,8 @@ function controlFromSlider(fromSlider, toSlider, fromInput) {
 
 function controlToSlider(fromSlider, toSlider, toInput) {
   const [from, to] = getParsed(fromSlider, toSlider);
+  updateDiagram(from, to);
+
   fillSlider(fromSlider, toSlider, "#C6C6C6", fillColor, toSlider);
   setToggleAccessible(toSlider);
   if (from <= to) {
@@ -325,6 +333,25 @@ function setToggleAccessible(currentTarget) {
   } else {
     toSlider.style.zIndex = 0;
   }
+}
+
+function updateDiagram(minSlider, maxSlider) {
+  d3.selectAll("circle").style("display", (d) => {
+    if (d.value < minSlider || d.value > maxSlider) {
+      return "none";
+    }
+  });
+
+  d3.selectAll("line").style("display", (d) => {
+    if (
+      d.source.value < minSlider ||
+      d.source.value > maxSlider ||
+      d.target.value < minSlider ||
+      d.target.value > maxSlider
+    ) {
+      return "none";
+    }
+  });
 }
 
 const fromSlider = document.querySelector("#fromSlider");
