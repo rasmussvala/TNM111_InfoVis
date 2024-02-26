@@ -129,7 +129,11 @@ function createDiagram(svgId, data) {
   const links = svg.append("g");
   const nodes = svg.append("g");
   const zoom = d3.zoom().scaleExtent([0.1, 15]).on("zoom", handleZoom);
+
   svg.call(zoom);
+
+  svg.call(zoom.transform, d3.zoomIdentity.scale(0.1));
+
   const sizeScale = d3
     .scaleLinear()
     .domain([
@@ -143,19 +147,19 @@ function createDiagram(svgId, data) {
 
   const simulation = d3
     .forceSimulation(data.nodes)
-    .force("charge", d3.forceManyBody().strength(-10000))
-    .force("center", d3.forceCenter(width / 2, height / 2))
+    .force("charge", d3.forceManyBody().strength(-8000))
     .force(
       "link",
       d3
         .forceLink()
         .links(data.links)
-        .distance((d) => 1000 / d.value)
+        .distance((d) => 500 / d.value)
     )
     .force(
       "collide",
       d3.forceCollide().radius((d) => sizeScale(d.value) + 5)
     )
+    .force("center", d3.forceCenter(width / 2, height / 2))
     .alphaDecay(0.02)
     .on("tick", ticked);
 

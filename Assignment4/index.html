@@ -15,13 +15,11 @@
 
     <div class="grid-container">
       <div class="grid-item">
-        <h2>Episode X</h2>
-        <svg class="graph" viewBox="0 0 1920 1080" id="diagram1"></svg>
+        <svg class="graph" viewBox="-700 -540 1920 1080" id="diagram1"></svg>
       </div>
 
       <div class="grid-item">
-        <h2>Episode X</h2>
-        <svg class="graph" viewBox="0 0 1920 1080" id="diagram2"></svg>
+        <svg class="graph" viewBox="-700 -540 1920 1080" id="diagram2"></svg>
       </div>
 
       <div class="episodes" id="episodes1">
@@ -75,38 +73,38 @@
       import { toggleEpisode } from "./assignment4.js";
       window.toggleEpisode = toggleEpisode;
 
-      document.addEventListener("DOMContentLoaded", function () {
-        const episodes1 = document.getElementById('episodes1');
-        const episodes2 = document.getElementById('episodes2');
+      console.log("Script runs")
+      const episodes1 = document.getElementById('episodes1');
+      const episodes2 = document.getElementById('episodes2');
+      console.log("Content loaded")
 
-        // Function to generate checkboxes
-        function generateCheckboxes(container, diagramId) {
-          for (let i = 1; i <= 7; i++) {
-            const span = document.createElement('span');
-            const input = document.createElement('input');
-            input.type = 'checkbox';
-            input.checked = true;
-            input.dataset.episode = i;
-            input.dataset.diagram = diagramId;
-            input.onchange = function () {
-              toggleEpisode(i, diagramId, this.checked);
-            };
-            const label = document.createElement('label');
-            label.textContent = i;
+      // Function to generate checkboxes
+      function generateCheckboxes(container, diagramId) {
+        for (let i = 1; i <= 7; i++) {
+          const span = document.createElement('span');
+          const input = document.createElement('input');
+          input.type = 'checkbox';
+          input.checked = true;
+          input.dataset.episode = i;
+          input.dataset.diagram = diagramId;
+          input.onchange = function () {
+            toggleEpisode(i, diagramId, this.checked);
+          };
+          const label = document.createElement('label');
+          label.textContent = i;
 
-            span.appendChild(input);
-            span.appendChild(label);
+          span.appendChild(input);
+          span.appendChild(label);
 
-            container.appendChild(span);
-          }
+          container.appendChild(span);
         }
+      }
 
-        // Generate checkboxes for diagram1
-        generateCheckboxes(episodes1, 'diagram1');
+      // Generate checkboxes for diagram1
+      generateCheckboxes(episodes1, 'diagram1');
 
-        // Generate checkboxes for diagram2
-        generateCheckboxes(episodes2, 'diagram2');
-      });
+      // Generate checkboxes for diagram2
+      generateCheckboxes(episodes2, 'diagram2');
     </script>
 
   </body>
